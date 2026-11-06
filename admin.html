@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>관리자 · 정세웅의 수학세상</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Gowun+Batang:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f3f1ea; --paper:#fff; --ink:#1d2430; --muted:#6a7280; --line:#e2ddd2;
+    --c1:#2f6fb0; --c2:#2f8a5f; --c3:#c0622b; --c4:#7a4bb0; --danger:#b3412f; --danger-soft:#f8e6e2; --warn:#fff5dc;
+    --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.06); --r:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55;font-size:15px}
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer}
+  a{color:var(--c1)}
+  .bar{background:#1d2430;color:#fff;padding:12px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .bar .t{font-family:"Gowun Batang",serif;font-size:19px;font-weight:700}
+  .bar .badge{background:#c0622b;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;letter-spacing:.04em}
+  .bar .sp{flex:1}
+  .bar a,.bar button{color:#cfd6e0;background:transparent;border:1px solid #3a4352;border-radius:8px;padding:6px 12px;font-size:13px;text-decoration:none}
+  .bar a:hover,.bar button:hover{color:#fff;border-color:#6a7280}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 22px 90px}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:26px}
+  .login{max-width:560px;margin:40px auto}
+  .login h2{margin:0 0 6px}
+  .login p{color:var(--muted);margin:0 0 18px;font-size:14px}
+  label{display:block;font-size:13px;font-weight:700;margin:0 0 5px}
+  .in{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);outline:none;margin-bottom:14px}
+  .in:focus{border-color:var(--c1)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  details{margin-top:14px;font-size:14px;color:var(--muted)}
+  details summary{cursor:pointer;font-weight:700;color:var(--ink)}
+  details ol{padding-left:20px;margin:10px 0 0}
+  details li{margin-bottom:6px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--paper);font-weight:500;font-size:14px;text-decoration:none;color:var(--ink)}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{background:var(--c1);border-color:var(--c1);color:#fff}
+  .btn.danger{color:var(--danger)} .btn.danger:hover{background:var(--danger-soft);border-color:var(--danger)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:18px;font-weight:800;margin:0 0 14px}
+  .crumbs a{color:var(--muted);padding:2px 6px;border-radius:7px;cursor:pointer;text-decoration:none;font-weight:700}
+  .crumbs a:hover{background:var(--paper);color:var(--ink)}
+  .crumbs .sep{color:var(--line)}
+  .crumbs b{padding:2px 6px}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .hint{font-size:12.5px;color:var(--muted);margin:0 0 18px}
+  .status{padding:11px 14px;border-radius:10px;margin-bottom:16px;font-size:14px;display:flex;gap:10px;align-items:center}
+  .status.info{background:#e6eef8;color:#1e4b7a}
+  .status.ok{background:#e3f1e8;color:#1f5e3d}
+  .status.err{background:var(--danger-soft);color:var(--danger)}
+  .sec{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin:8px 0 10px}
+  .list{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:22px}
+  .it{display:flex;align-items:center;gap:12px;padding:11px 14px;border-top:1px solid var(--line)}
+  .it:first-child{border-top:none}
+  .it:hover{background:#faf9f5}
+  .it .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+  .it .nm b{font-weight:700}
+  .it .nm.click{cursor:pointer}
+  .it .nm.click:hover b{color:var(--c1)}
+  .it .d{font-size:12.5px;color:var(--muted)}
+  .ico{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:none;font-size:16px;color:#fff;font-weight:800}
+  .ico.folder{background:#e9b949}
+  .ico.html{background:var(--c3);font-size:10px}
+  .ico.link{background:var(--c1)}
+  .ico.file{background:var(--c2);font-size:10px}
+  .ib{border:1px solid transparent;background:transparent;border-radius:8px;padding:6px 9px;font-size:13px;color:var(--muted);flex:none}
+  .ib:hover{background:var(--bg);border-color:var(--line);color:var(--ink)}
+  .ib.del:hover{color:var(--danger);border-color:var(--danger);background:var(--danger-soft)}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);border:2px dashed var(--line);border-radius:var(--r);margin-bottom:22px}
+  .drop{position:fixed;inset:0;background:rgba(47,111,176,.14);border:4px dashed var(--c1);display:none;place-items:center;z-index:40;font-size:22px;font-weight:800;color:var(--c1);pointer-events:none}
+  .drop.on{display:grid}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;z-index:50;padding:18px}
+  .modal{background:var(--paper);border-radius:16px;padding:22px;width:min(440px,100%);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h3{margin:0 0 6px;font-size:17px}
+  .modal p{margin:0 0 14px;color:var(--muted);font-size:14px}
+  .btns{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+  .busy{position:fixed;inset:0;background:rgba(255,255,255,.55);display:grid;place-items:center;z-index:60;font-weight:700}
+  .busy div{background:var(--paper);padding:16px 22px;border-radius:12px;box-shadow:var(--shadow);border:1px solid var(--line)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:70;max-width:90%}
+  .spin{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:s 1s linear infinite;flex:none}
+  @keyframes s{to{transform:rotate(360deg)}}
+  @media (max-width:600px){ .row2{grid-template-columns:1fr} .it .d{display:none} }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="t">정세웅의 수학세상</span><span class="badge">관리자</span>
+  <span class="sp"></span>
+  <a id="siteLink" href="./" target="_blank" rel="noopener">사이트 보기 ↗</a>
+  <button id="logout" hidden>로그아웃</button>
+</div>
+
+<div class="wrap" id="app"></div>
+<div class="drop" id="drop">여기에 놓으면 지금 폴더에 올라가요</div>
+
+<script>
+(() => {
+  const API = "https://api.github.com";
+  const LS = "msw-admin";
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const nfc = s => (s||"").normalize("NFC");
+  const size = b => b==null ? "" : b<1024 ? b+" B" : b<1048576 ? Math.round(b/1024)+" KB" : (b/1048576).toFixed(1)+" MB";
+  const extOf = n => { const m=/\.([^.\/]+)$/.exec(n||""); return m ? m[1].toLowerCase() : ""; };
+  const stemOf = n => (n||"").replace(/\.[^.\/]+$/,"");
+  const baseOf = p => p.split("/").pop();
+  const dirOf = p => p.includes("/") ? p.slice(0,p.lastIndexOf("/")) : "";
+  const join = (d,n) => d ? d+"/"+n : n;
+  const hidden = n => n.startsWith(".") || n.startsWith("_");
+  const ROOT_SKIP = new Set(["scripts"]);
+
+  // ---------- settings ----------
+  const store = {
+    get(){ try{ return JSON.parse(localStorage.getItem(LS)||"null"); }catch(e){ return null; } },
+    set(v){ try{ localStorage.setItem(LS, JSON.stringify(v)); }catch(e){} },
+    clear(){ try{ localStorage.removeItem(LS); }catch(e){} }
+  };
+  function guessRepo(){
+    const h = location.hostname;
+    if(!h.endsWith(".github.io")) return {owner:"", repo:""};
+    const owner = h.split(".")[0];
+    const seg = location.pathname.split("/").filter(Boolean)[0] || "";
+    const repo = (!seg || /\.html?$/.test(seg)) ? owner + ".github.io" : decodeURIComponent(seg);
+    return {owner, repo};
+  }
+  let cfg = store.get() || {};
+  if(!cfg.owner || !cfg.repo){ const g = guessRepo(); cfg.owner = cfg.owner || g.owner; cfg.repo = cfg.repo || g.repo; }
+
+  // ---------- GitHub API ----------
+  async function gh(path, opts={}){
+    const headers = { "Accept":"application/vnd.github+json", "Authorization":"Bearer "+cfg.token, "X-GitHub-Api-Version":"2022-11-28" };
+    if(opts.body) headers["Content-Type"]="application/json";
+    let r;
+    try{ r = await fetch(API+path, {...opts, headers, cache:"no-store"}); }
+    catch(e){ const er=new Error("인터넷 연결을 확인해 주세요."); er.status=0; throw er; }
+    if(!r.ok){
+      let msg=""; try{ msg=(await r.json()).message||""; }catch(e){}
+      const er=new Error(msg||("오류 "+r.status)); er.status=r.status; throw er;
+    }
+    return r.status===204 ? null : r.json();
+  }
+  const R = () => `/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}`;
+
+  // ---------- state ----------
+  const S = { branch:"main", headSha:"", files:new Map(), dirs:new Set(), cur:"", siteUrl:"" };
+
+  async function loadTree(){
+    const ref = await gh(`${R()}/git/ref/heads/${encodeURIComponent(S.branch)}`);
+    S.headSha = ref.object.sha;
+    const t = await gh(`${R()}/git/trees/${S.headSha}?recursive=1`);
+    S.files = new Map(); S.dirs = new Set();
+    for(const e of t.tree){
+      if(e.type==="blob") S.files.set(e.path, {path:e.path, sha:e.sha, size:e.size});
+      else if(e.type==="tree") S.dirs.add(e.path);
+    }
+  }
+
+  // one commit for many changes: [{path, content(base64)} | {path, sha} | {path, del:true}]
+  async function commit(changes, message, retry=true){
+    try{
+      const ref = await gh(`${R()}/git/ref/heads/${encodeURIComponent(S.branch)}`);
+      const parent = ref.object.sha;
+      const pc = await gh(`${R()}/git/commits/${parent}`);
+      const tree = [];
+      for(const c of changes){
+        if(c.del) tree.push({path:c.path, mode:"100644", type:"blob", sha:null});
+        else if(c.sha) tree.push({path:c.path, mode:"100644", type:"blob", sha:c.sha});
+        else {
+          const b = await gh(`${R()}/git/blobs`, {method:"POST", body:JSON.stringify({content:c.content, encoding:"base64"})});
+          tree.push({path:c.path, mode:"100644", type:"blob", sha:b.sha});
+        }
+      }
+      const nt = await gh(`${R()}/git/trees`, {method:"POST", body:JSON.stringify({base_tree:pc.tree.sha, tree})});
+      const nc = await gh(`${R()}/git/commits`, {method:"POST", body:JSON.stringify({message, tree:nt.sha, parents:[parent]})});
+      await gh(`${R()}/git/refs/heads/${encodeURIComponent(S.branch)}`, {method:"PATCH", body:JSON.stringify({sha:nc.sha})});
+    }catch(e){
+      if(retry && (e.status===409 || e.status===422)) return commit(changes, message, false);
+      throw e;
+    }
+    await loadTree();
+    watchDeploy();
+  }
+
+  const b64text = s => { const bytes=new TextEncoder().encode(s); let bin=""; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null, bytes.subarray(i,i+0x8000)); return btoa(bin); };
+  const b64file = f => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]||""); r.onerror=()=>rej(r.error); r.readAsDataURL(f); });
+
+  // ---------- deploy status ----------
+  let watchTimer=null, watchUntil=0;
+  function setStatus(kind, html){ const el=$("#status"); if(!el) return; if(!kind){ el.innerHTML=""; return; } el.innerHTML=`<div class="status ${kind}">${html}</div>`; }
+  function watchDeploy(){
+    watchUntil = Date.now()+4*60*1000;
+    setStatus("info", `<span class="spin"></span>저장했어요. 보는 사람 페이지에는 1~2분 뒤에 반영돼요.`);
+    clearTimeout(watchTimer); watchTimer=setTimeout(pollDeploy, 8000);
+  }
+  async function pollDeploy(){
+    try{
+      const r = await gh(`${R()}/actions/runs?branch=${encodeURIComponent(S.branch)}&per_page=1`);
+      const run = r.workflow_runs && r.workflow_runs[0];
+      if(run && run.head_sha===S.headSha){
+        if(run.status==="completed"){
+          if(run.conclusion==="success") setStatus("ok", `✓ 사이트에 반영됐어요. <a href="${esc(S.siteUrl)}" target="_blank" rel="noopener">사이트 보기 ↗</a>`);
+          else if(run.conclusion!=="cancelled") setStatus("err", `사이트 반영에 실패했어요. <a href="${esc(run.html_url)}" target="_blank" rel="noopener">GitHub에서 원인 보기 ↗</a>`);
+          return;
+        }
+      }
+    }catch(e){
+      if(e.status===403 || e.status===404){ setTimeout(()=>setStatus("ok","✓ 저장했어요. 1~2분 뒤 사이트에 반영돼요."), 60000); return; }
+    }
+    if(Date.now()<watchUntil) watchTimer=setTimeout(pollDeploy, 7000);
+    else setStatus("ok","✓ 저장했어요. 사이트에 반영이 늦어지면 잠시 후 새로고침해 보세요.");
+  }
+
+  // ---------- model helpers ----------
+  function subdirs(d){
+    const out=[];
+    for(const p of S.dirs){
+      if(dirOf(p)!==d) continue;
+      const n=baseOf(p);
+      if(hidden(n)) continue;
+      if(!d && ROOT_SKIP.has(n)) continue;
+      out.push(p);
+    }
+    let order=[];
+    if(!d){ try{ order = JSON.parse(atobUtf8(S.siteJson||"")).order||[]; }catch(e){} }
+    const rank=n=>{ const i=order.indexOf(nfc(n)); return i<0?1e9:i; };
+    return out.sort((a,b)=>rank(baseOf(a))-rank(baseOf(b)) || baseOf(a).localeCompare(baseOf(b),"ko",{numeric:true}));
+  }
+  function filesIn(d){
+    if(!d) return [];
+    return [...S.files.values()].filter(f=>dirOf(f.path)===d && !hidden(baseOf(f.path)))
+      .sort((a,b)=>baseOf(a.path).localeCompare(baseOf(b.path),"ko",{numeric:true}));
+  }
+  const allUnder = d => [...S.files.values()].filter(f=>f.path.startsWith(d+"/"));
+  const countUnder = d => allUnder(d).filter(f=>!f.path.split("/").some(hidden)).length;
+  function atobUtf8(b64){ const bin=atob(b64); const bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return new TextDecoder().decode(bytes); }
+  function kindOf(path){ const e=extOf(path); return e==="url"?"link": (e==="html"||e==="htm")?"html":"file"; }
+  function cleanName(n){ return nfc(n).replace(/[\\/:*?"<>|\u0000-\u001f]/g," ").replace(/\s+/g," ").trim().replace(/^[._]+/,""); }
+
+  // ---------- UI: login ----------
+  function showLogin(err){
+    $("#logout").hidden = true;
+    $("#app").innerHTML = `<div class="card login">
+      <h2>관리자 로그인</h2>
+      <p>GitHub에서 만든 ‘열쇠(토큰)’를 한 번 넣어 두면, 이 컴퓨터의 이 브라우저에서는 다음부터 바로 들어올 수 있어요.</p>
+      ${err?`<div class="status err">${esc(err)}</div>`:""}
+      <div class="row2">
+        <div><label>GitHub 아이디</label><input class="in" id="owner" value="${esc(cfg.owner||"")}" placeholder="sewoongjeongmath"></div>
+        <div><label>저장소 이름</label><input class="in" id="repo" value="${esc(cfg.repo||"")}" placeholder="math"></div>
+      </div>
+      <label>토큰</label><input class="in" id="token" type="password" placeholder="github_pat_…" autocomplete="off">
+      <button class="btn primary" id="loginBtn" style="width:100%;justify-content:center">들어가기</button>
+      <details><summary>토큰은 어떻게 만들어요?</summary>
+        <ol>
+          <li>GitHub에 로그인한 상태에서 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">이 링크</a>를 열어요. (Settings → Developer settings → Fine-grained tokens → Generate new token)</li>
+          <li><b>Token name</b>: 아무 이름(예: 수학세상 관리자), <b>Expiration</b>: 가장 길게.</li>
+          <li><b>Repository access</b>: <b>Only select repositories</b> → 이 사이트 저장소 하나만 고르기.</li>
+          <li><b>Permissions → Repository permissions</b>에서 <b>Contents</b>를 <b>Read and write</b>로, <b>Actions</b>를 <b>Read-only</b>로.</li>
+          <li>맨 아래 <b>Generate token</b> → 나온 <code>github_pat_…</code>를 복사해 위 칸에 붙여 넣기.</li>
+        </ol>
+        <p style="margin-top:8px">토큰은 이 브라우저에만 저장되고 다른 곳으로 보내지지 않아요. 공용 컴퓨터에서는 다 쓰고 꼭 ‘로그아웃’을 눌러 주세요.</p>
+      </details>
+    </div>`;
+    const go = async () => {
+      cfg.owner=$("#owner").value.trim(); cfg.repo=$("#repo").value.trim(); cfg.token=$("#token").value.trim();
+      if(!cfg.owner||!cfg.repo||!cfg.token){ showLogin("세 칸을 모두 채워 주세요."); return; }
+      await start(true);
+    };
+    $("#loginBtn").onclick=go;
+    $("#token").onkeydown=e=>{ if(e.key==="Enter") go(); };
+    (cfg.owner&&cfg.repo ? $("#token") : $("#owner")).focus();
+  }
+
+  async function start(fromLogin){
+    busy("불러오는 중…");
+    try{
+      const info = await gh(R());
+      if(info.permissions && info.permissions.push===false) throw Object.assign(new Error("이 토큰으로는 저장소를 고칠 수 없어요. Contents 권한을 ‘Read and write’로 해 주세요."),{status:403});
+      S.branch = info.default_branch || "main";
+      S.siteUrl = cfg.repo.toLowerCase()===(cfg.owner+".github.io").toLowerCase() ? `https://${cfg.repo}/` : `https://${cfg.owner}.github.io/${cfg.repo}/`;
+      $("#siteLink").href = S.siteUrl;
+      await loadTree();
+      try{ const sj = await gh(`${R()}/contents/site.json?ref=${encodeURIComponent(S.branch)}`); S.siteJson = (sj.content||"").replace(/\s/g,""); }catch(e){ S.siteJson=""; }
+      store.set({owner:cfg.owner, repo:cfg.repo, token:cfg.token});
+      readHash(); render();
+    }catch(e){
+      const m = e.status===401 ? "토큰이 맞지 않거나 만료됐어요. 새로 만들어 넣어 주세요."
+              : e.status===404 ? "저장소를 찾을 수 없어요. 아이디·저장소 이름과, 토큰에 이 저장소를 골랐는지 확인해 주세요."
+              : e.message;
+      if(!fromLogin){ cfg.token=""; }
+      showLogin(m);
+    }finally{ unbusy(); }
+  }
+
+  // ---------- UI: main ----------
+  function readHash(){ let h=location.hash.replace(/^#/,""); try{ h=decodeURIComponent(h); }catch(e){} S.cur = S.dirs.has(h) ? h : ""; }
+  addEventListener("hashchange", ()=>{ if(cfg.token && S.headSha){ readHash(); render(); } });
+  function go(d){ const h = d ? "#"+encodeURIComponent(d) : ""; if(location.hash!==h){ if(h) location.hash=h; else { history.replaceState(null,"",location.pathname); S.cur=""; render(); } } else render(); }
+
+  function render(){
+    $("#logout").hidden = false;
+    if(S.cur && !S.dirs.has(S.cur)) S.cur = dirOf(S.cur);
+    const parts = S.cur ? S.cur.split("/") : [];
+    let crumbs = parts.length ? `<a data-go="">처음</a>` : `<b>처음</b>`;
+    parts.forEach((p,i)=>{ const path=parts.slice(0,i+1).join("/"); crumbs += `<span class="sep">›</span>` + (i===parts.length-1?`<b>${esc(nfc(p))}</b>`:`<a data-go="${esc(path)}">${esc(nfc(p))}</a>`); });
+    const ds = subdirs(S.cur), fs = filesIn(S.cur);
+    const status = $("#status") ? $("#status").innerHTML : "";
+    $("#app").innerHTML = `
+      <div id="status">${status}</div>
+      <div class="crumbs">${crumbs}</div>
+      <div class="tools">
+        <button class="btn" id="bFolder">📁 새 폴더</button>
+        ${S.cur?`<button class="btn" id="bLink">🔗 링크 추가</button><button class="btn primary" id="bUp">⬆ 파일 올리기</button>`:""}
+        <button class="btn" id="bRefresh" title="다시 불러오기" style="margin-left:auto">↻</button>
+        <input type="file" id="fileIn" multiple hidden>
+      </div>
+      <div class="hint">${S.cur?"파일을 이 창에 끌어다 놓아도 지금 폴더에 올라가요. 한 번에 여러 개도 돼요.":"맨 처음 화면에는 폴더만 둘 수 있어요. 폴더로 들어가서 파일·링크를 올려 주세요."}</div>
+      ${ds.length?`<div class="sec">폴더 ${ds.length}</div><div class="list">${ds.map(d=>{ const n=countUnder(d), s=subdirs(d).length; return `
+        <div class="it"><span class="ico folder">📁</span>
+          <div class="nm click" data-go="${esc(d)}"><b>${esc(nfc(baseOf(d)))}</b><div class="d">${s?`폴더 ${s} · `:""}자료 ${n}</div></div>
+          <button class="ib" data-rnd="${esc(d)}">이름 바꾸기</button><button class="ib del" data-deld="${esc(d)}">삭제</button></div>`; }).join("")}</div>`:""}
+      ${fs.length?`<div class="sec">자료 ${fs.length}</div><div class="list">${fs.map(f=>{ const k=kindOf(f.path), nm=nfc(baseOf(f.path)); const lab = k==="link"?"🔗":k==="html"?"HTML":(extOf(nm)||"파일").toUpperCase().slice(0,4); return `
+        <div class="it"><span class="ico ${k}">${esc(lab)}</span>
+          <div class="nm"><b>${esc(stemOf(nm))}</b><div class="d">${k==="link"?"링크":size(f.size)}</div></div>
+          ${k==="link"?`<button class="ib" data-editl="${esc(f.path)}">주소 고치기</button>`:""}
+          <button class="ib" data-mv="${esc(f.path)}">옮기기</button>
+          <button class="ib" data-rnf="${esc(f.path)}">이름 바꾸기</button><button class="ib del" data-delf="${esc(f.path)}">삭제</button></div>`; }).join("")}</div>`:""}
+      ${(!ds.length && !fs.length)?`<div class="empty">${S.cur?"비어 있는 폴더예요. 위 버튼으로 세부 폴더를 만들거나 파일·링크를 올려 보세요.":"아직 폴더가 없어요. ‘새 폴더’로 만들어 보세요."}</div>`:""}
+    `;
+    $("#bFolder").onclick=newFolder;
+    $("#bRefresh").onclick=async()=>{ busy("다시 불러오는 중…"); try{ await loadTree(); render(); }catch(e){ toast(e.message); } finally{ unbusy(); } };
+    if(S.cur){ $("#bLink").onclick=addLink; $("#bUp").onclick=()=>$("#fileIn").click(); $("#fileIn").onchange=e=>{ upload([...e.target.files]); e.target.value=""; }; }
+  }
+
+  document.addEventListener("click", e=>{
+    const t=e.target.closest("[data-go],[data-rnd],[data-deld],[data-rnf],[data-delf],[data-editl],[data-mv]"); if(!t) return;
+    const d=t.dataset;
+    if(d.go!==undefined) go(d.go);
+    else if(d.rnd) renameDir(d.rnd);
+    else if(d.deld) deleteDir(d.deld);
+    else if(d.rnf) renameFile(d.rnf);
+    else if(d.delf) deleteFile(d.delf);
+    else if(d.editl) editLink(d.editl);
+    else if(d.mv) moveFile(d.mv);
+  });
+  $("#logout").onclick=()=>{ store.clear(); cfg.token=""; S.headSha=""; history.replaceState(null,"",location.pathname); showLogin(); };
+
+  // ---------- dialogs ----------
+  function modal(html){ const bg=document.createElement("div"); bg.className="modal-bg"; bg.innerHTML=html; document.body.appendChild(bg);
+    const onKey=e=>{ if(e.key==="Escape") close(); }; const close=()=>{ bg.remove(); document.removeEventListener("keydown",onKey); };
+    bg.addEventListener("mousedown",e=>{ if(e.target===bg) close(); }); document.addEventListener("keydown",onKey); return {bg,close}; }
+  function form(title, fields, okLabel, note){ return new Promise(res=>{
+    const m=modal(`<div class="modal"><h3>${esc(title)}</h3>${note?`<p>${esc(note)}</p>`:""}${fields.map((f,i)=>`${f.label?`<label>${esc(f.label)}</label>`:""}<input class="in" data-i="${i}" value="${esc(f.value||"")}" placeholder="${esc(f.ph||"")}">`).join("")}
+      <div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" data-ok>${esc(okLabel||"확인")}</button></div></div>`);
+    const ins=[...m.bg.querySelectorAll("input")]; ins[0].focus(); ins[0].select();
+    let done=false; const fin=v=>{ if(done) return; done=true; m.close(); res(v); };
+    const ok=()=>{ const v=ins.map(i=>i.value.trim()); const empty=ins.find(i=>!i.value.trim()); if(empty){ empty.focus(); return; } fin(v); };
+    m.bg.querySelector("[data-x]").onclick=()=>fin(null); m.bg.querySelector("[data-ok]").onclick=ok;
+    ins.forEach(i=>i.onkeydown=e=>{ if(e.key==="Enter") ok(); });
+  }); }
+  function confirmBox(title,msg){ return new Promise(res=>{
+    const m=modal(`<div class="modal"><h3>${esc(title)}</h3><p>${esc(msg)}</p><div class="btns"><button class="btn" data-x>취소</button><button class="btn danger" data-ok>삭제</button></div></div>`);
+    m.bg.querySelector("[data-x]").onclick=()=>{m.close();res(false);}; m.bg.querySelector("[data-ok]").onclick=()=>{m.close();res(true);};
+  }); }
+  let busyEl=null;
+  function busy(t){ unbusy(); busyEl=document.createElement("div"); busyEl.className="busy"; busyEl.innerHTML=`<div><span class="spin" style="display:inline-block;vertical-align:-2px;margin-right:8px"></span>${esc(t)}</div>`; document.body.appendChild(busyEl); }
+  function unbusy(){ if(busyEl){ busyEl.remove(); busyEl=null; } }
+  function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),3500); }
+  async function run(label, fn){
+    busy(label);
+    try{ await fn(); render(); }
+    catch(e){ console.warn(e); toast(e.status===401?"토큰이 만료됐어요. 로그아웃 후 새 토큰을 넣어 주세요." : e.status===403?"권한이 없어요. 토큰의 Contents 권한을 확인해 주세요." : "저장하지 못했어요: "+e.message); }
+    finally{ unbusy(); }
+  }
+  const exists = p => S.files.has(p) || S.dirs.has(p);
+
+  // ---------- actions ----------
+  async function newFolder(){
+    const v=await form(S.cur?`‘${nfc(baseOf(S.cur))}’ 안에 새 폴더`:"새 폴더",[{ph:"예: 1학기, 일차방정식"}],"만들기"); if(!v) return;
+    const name=cleanName(v[0]); if(!name){ toast("폴더 이름을 확인해 주세요"); return; }
+    const p=join(S.cur,name); if(exists(p)){ toast("같은 이름이 이미 있어요"); return; }
+    await run("폴더 만드는 중…", ()=>commit([{path:p+"/.gitkeep", content:"Cg=="}], `폴더 만들기: ${p}`));
+  }
+  async function addLink(){
+    const v=await form("링크 추가",[{label:"제목",ph:"예: 일차방정식 퀴즈"},{label:"주소",ph:"https://…"}],"추가"); if(!v) return;
+    const name=cleanName(v[0]); let url=v[1]; if(!/^https?:\/\//i.test(url)) url="https://"+url;
+    try{ new URL(url); }catch(e){ toast("주소가 올바르지 않아요"); return; }
+    if(!name){ toast("제목을 확인해 주세요"); return; }
+    const p=join(S.cur,name+".url"); if(exists(p)){ toast("같은 제목의 링크가 이미 있어요"); return; }
+    await run("링크 추가하는 중…", ()=>commit([{path:p, content:b64text(url+"\n")}], `링크 추가: ${p}`));
+  }
+  async function editLink(path){
+    let cur=""; try{ const b=await gh(`${R()}/git/blobs/${S.files.get(path).sha}`); cur=atobUtf8((b.content||"").replace(/\s/g,"")); const m=/^\s*URL\s*=\s*(\S+)/mi.exec(cur)||/https?:\/\/\S+/.exec(cur); cur=m?(m[1]||m[0]):""; }catch(e){}
+    const v=await form("링크 주소 고치기",[{label:"주소",value:cur,ph:"https://…"}],"저장"); if(!v) return;
+    let url=v[0]; if(!/^https?:\/\//i.test(url)) url="https://"+url;
+    try{ new URL(url); }catch(e){ toast("주소가 올바르지 않아요"); return; }
+    await run("저장하는 중…", ()=>commit([{path, content:b64text(url+"\n")}], `링크 수정: ${path}`));
+  }
+  async function upload(list){
+    if(!S.cur){ toast("먼저 파일을 넣을 폴더로 들어가 주세요"); return; }
+    if(!list.length) return;
+    const big=list.filter(f=>f.size>50*1048576);
+    if(big.length){ toast(`50MB가 넘는 파일은 올릴 수 없어요: ${big.map(f=>f.name).join(", ")}`); list=list.filter(f=>f.size<=50*1048576); if(!list.length) return; }
+    const changes=[]; const names=[];
+    busy(`파일 준비 중… (0/${list.length})`);
+    try{
+      for(let i=0;i<list.length;i++){
+        const f=list[i]; const n=cleanName(f.name)||("파일"+(i+1));
+        busyEl && (busyEl.querySelector("div").lastChild.textContent=`파일 준비 중… (${i+1}/${list.length})`);
+        changes.push({path:join(S.cur,n), content:await b64file(f)}); names.push(n);
+      }
+    }catch(e){ unbusy(); toast("파일을 읽지 못했어요"); return; }
+    unbusy();
+    const dup=names.filter(n=>S.files.has(join(S.cur,n)));
+    if(dup.length && !await new Promise(res=>{ const m=modal(`<div class="modal"><h3>같은 이름의 파일이 있어요</h3><p>${esc(dup.join(", "))}<br>새 파일로 바꿔 넣을까요?</p><div class="btns"><button class="btn" data-x>취소</button><button class="btn primary" data-ok>바꿔 넣기</button></div></div>`); m.bg.querySelector("[data-x]").onclick=()=>{m.close();res(false);}; m.bg.querySelector("[data-ok]").onclick=()=>{m.close();res(true);}; })) return;
+    await run(`올리는 중… (${list.length}개)`, ()=>commit(changes, `파일 올리기: ${S.cur} (${names.length}개)`));
+    toast(`${names.length}개를 올렸어요`);
+  }
+  async function renameFile(path){
+    const nm=nfc(baseOf(path)), k=kindOf(path), e=extOf(nm);
+    const v=await form("이름 바꾸기",[{value:k==="file"?stemOf(nm):stemOf(nm)}],"저장",e?`확장자(.${e})는 그대로 유지돼요.`:""); if(!v) return;
+    const n=cleanName(v[0]); if(!n) return;
+    const np=join(dirOf(path), n+(e?"."+e:"")); if(np===path) return; if(exists(np)){ toast("같은 이름이 이미 있어요"); return; }
+    await run("이름 바꾸는 중…", ()=>commit([{path:np, sha:S.files.get(path).sha},{path, del:true}], `이름 바꾸기: ${path} → ${np}`));
+  }
+  function moveFile(path){
+    const opts=[]; const walk=(d,depth)=>subdirs(d).forEach(x=>{ opts.push([x,"　".repeat(depth)+nfc(baseOf(x))]); walk(x,depth+1); }); walk("",0);
+    const m=modal(`<div class="modal"><h3>‘${esc(nfc(stemOf(baseOf(path))))}’ 옮기기</h3><p>옮길 폴더를 고르세요.</p>
+      <div style="max-height:320px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-bottom:14px;padding:4px">${opts.map(([p,n])=>`<div class="it" style="cursor:pointer;padding:7px 10px;border:none;${p===dirOf(path)?"font-weight:700;background:#f3f1ea":""}" data-pick="${esc(p)}">${esc(n)}</div>`).join("")}</div>
+      <div class="btns"><button class="btn" data-x>취소</button></div></div>`);
+    m.bg.querySelector("[data-x]").onclick=m.close;
+    m.bg.querySelectorAll("[data-pick]").forEach(el=>el.onclick=async(ev)=>{ ev.stopPropagation(); m.close(); const to=el.dataset.pick; if(to===dirOf(path)) return;
+      const np=join(to, baseOf(path)); if(exists(np)){ toast("그 폴더에 같은 이름이 이미 있어요"); return; }
+      await run("옮기는 중…", ()=>commit([{path:np, sha:S.files.get(path).sha},{path, del:true}], `옮기기: ${path} → ${np}`)); });
+  }
+  async function deleteFile(path){
+    if(!await confirmBox(`‘${nfc(stemOf(baseOf(path)))}’을(를) 삭제할까요?`,"사이트에서 사라지고 되돌리기 어려워요.")) return;
+    const d=dirOf(path); const left=[...S.files.keys()].filter(p=>p!==path && p.startsWith(d+"/"));
+    const ch=[{path, del:true}]; if(!left.length) ch.push({path:d+"/.gitkeep", content:"Cg=="}); // 폴더 유지
+    await run("삭제하는 중…", ()=>commit(ch, `삭제: ${path}`));
+  }
+  async function renameDir(d){
+    const v=await form("폴더 이름 바꾸기",[{value:nfc(baseOf(d))}],"저장"); if(!v) return;
+    const n=cleanName(v[0]); if(!n) return; const nd=join(dirOf(d),n); if(nd===d) return; if(exists(nd)){ toast("같은 이름이 이미 있어요"); return; }
+    const ch=[]; for(const f of allUnder(d)){ ch.push({path:nd+f.path.slice(d.length), sha:f.sha}); ch.push({path:f.path, del:true}); }
+    await run("이름 바꾸는 중…", ()=>commit(ch, `폴더 이름 바꾸기: ${d} → ${nd}`));
+    if(S.cur===d || S.cur.startsWith(d+"/")) go(nd+S.cur.slice(d.length));
+  }
+  async function deleteDir(d){
+    const n=countUnder(d), s=[...S.dirs].filter(p=>p.startsWith(d+"/")).length;
+    if(!await confirmBox(`‘${nfc(baseOf(d))}’ 폴더를 삭제할까요?`, (n||s)?`안에 있는 ${s?`폴더 ${s}개와 `:""}자료 ${n}개도 함께 지워져요.`:"빈 폴더를 지워요.")) return;
+    const ch=allUnder(d).map(f=>({path:f.path, del:true}));
+    const parent=dirOf(d); if(parent && ![...S.files.keys()].some(p=>p.startsWith(parent+"/") && !p.startsWith(d+"/"))) ch.push({path:parent+"/.gitkeep", content:"Cg=="});
+    await run("삭제하는 중…", ()=>commit(ch, `폴더 삭제: ${d}`));
+    if(S.cur===d || S.cur.startsWith(d+"/")) go(parent);
+  }
+
+  // ---------- drag & drop ----------
+  let dragN=0;
+  addEventListener("dragenter",e=>{ if(!S.headSha||!S.cur||!e.dataTransfer?.types?.includes("Files")) return; e.preventDefault(); dragN++; $("#drop").classList.add("on"); });
+  addEventListener("dragover",e=>{ if(S.headSha) e.preventDefault(); });
+  addEventListener("dragleave",()=>{ if(--dragN<=0){ dragN=0; $("#drop").classList.remove("on"); } });
+  addEventListener("drop",e=>{ if(!S.headSha) return; e.preventDefault(); dragN=0; $("#drop").classList.remove("on"); const fs=[...(e.dataTransfer.files||[])].filter(f=>f.size>0||f.type); if(fs.length) upload(fs); });
+
+  // ---------- boot ----------
+  if(cfg.token) start(false); else showLogin();
+})();
+</script>
+</body>
+</html>
