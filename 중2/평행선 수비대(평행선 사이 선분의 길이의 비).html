@@ -1,0 +1,890 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>평행선 수비대</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: one game world (fixed forest-green look, single theme by choice). HUD strip above the canvas,
+   action bar below; a paper "문제 카드" sheet opens over it for every purchase. */
+:root{
+  --bg:#1b3121; --bg2:#25432d; --fg:#f2eddc; --soft:#b8c5ae; --gold:#f4c542; --gold-d:#b98a12;
+  --card:#f8f5ec; --ink:#1c2a4d; --isoft:#5a6680; --line:#d8d2c0;
+  --mark:#df5427; --mark-bg:rgba(223,84,39,.12); --ok:#1d8656; --ok-bg:rgba(29,134,86,.12); --bad:#c43838; --bad-bg:rgba(196,56,56,.09);
+  --key:#ffffff; --key-edge:#cbc5b3; --hp:#e2513f;
+  --f-display:"Do Hyeon","IBM Plex Sans KR",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.5}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:crosshair;touch-action:none}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button:disabled{cursor:not-allowed}
+.wrap{max-width:1040px;margin:0 auto;padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:12px}
+.label{font-size:12.5px;letter-spacing:.06em;color:var(--soft)}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(40px,7vw,64px);line-height:1;margin:4px 0 8px}
+h1 em{font-style:normal;color:var(--gold)}
+h2{font-family:var(--f-display);font-weight:400;font-size:24px;margin:0 0 10px}
+.coin{display:inline-block;width:.95em;height:.95em;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffe58a,var(--gold) 55%,var(--gold-d));box-shadow:inset 0 0 0 1.5px var(--gold-d);vertical-align:-.12em}
+.btn{font-family:var(--f-display);font-size:22px;padding:11px 26px;border-radius:12px;border:none;background:var(--gold);color:#2a2008;box-shadow:0 3px 0 var(--gold-d)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--gold-d)}
+.btn.ghost{background:transparent;color:var(--fg);border:1.5px solid var(--soft);box-shadow:none}
+.btn:disabled{opacity:.45}
+
+/* start + over panels */
+.panel{background:var(--bg2);border-radius:16px;padding:22px 22px 24px;display:grid;gap:18px}
+.panel p{margin:0;color:var(--soft);max-width:44em}
+.howto{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.howto div{background:rgba(0,0,0,.18);border-radius:12px;padding:12px 14px}
+.howto b{font-family:var(--f-display);font-weight:400;font-size:20px;display:block;color:var(--gold)}
+.howto span{font-size:14px;color:var(--soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.modesel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.mcard{text-align:left;background:rgba(0,0,0,.18);border:1.5px solid transparent;border-radius:12px;padding:12px 14px;display:grid;gap:4px;align-content:start}
+.mcard b{font-family:var(--f-display);font-weight:400;font-size:24px}
+.mcard span{font-size:14px;color:var(--soft)}
+.mcard .rec{font-family:var(--f-num);font-size:12.5px;color:var(--gold)}
+.mcard[aria-checked="true"]{border-color:var(--gold);background:rgba(244,197,66,.12)}
+.mcard[data-m="hard"] b{color:#ffb36b}.mcard[data-m="challenge"] b{color:#d9a6ff}.mcard[data-m="ultimate"] b{color:#ff8a8a}
+.opt .tg{font-size:12.5px;color:#7a5a08;background:#fbf0cc;border-radius:6px;padding:2px 8px;justify-self:start}
+.modechip{font-family:var(--f-display);font-size:18px;background:rgba(0,0,0,.25);border-radius:999px;padding:2px 12px;color:var(--gold)}
+.tchip{padding:7px 14px;border-radius:999px;border:1.5px dashed var(--soft);background:transparent;font-size:15px;opacity:.6}
+.tchip[aria-pressed="true"]{opacity:1;border-style:solid;border-color:var(--gold);background:rgba(244,197,66,.12)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.warn{color:#ff9a8a;font-size:14px}
+
+/* HUD */
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px}
+.hud .stat{display:grid;line-height:1.15}
+.hud .v{font-family:var(--f-num);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.hud .gold .v{color:var(--gold)}
+.hpbar{width:110px;height:10px;border-radius:5px;background:rgba(0,0,0,.35);overflow:hidden;margin-top:6px}
+.hpbar i{display:block;height:100%;background:var(--hp);transition:width .2s}
+.hud .sp{flex:1}
+.stage{position:relative}
+canvas{display:block;width:100%;height:auto;border-radius:14px;background:#63b14f;cursor:crosshair;touch-action:none}
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(20,30,20,.85);color:var(--fg);padding:6px 16px;border-radius:999px;font-size:15px;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.actions .btn{font-size:19px;padding:9px 18px}
+.help{font-size:14px;color:var(--soft);margin:0}
+
+/* modal sheet */
+.modal{position:fixed;inset:0;background:rgba(8,16,10,.55);display:flex;align-items:center;justify-content:center;z-index:10;
+  padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.sheet,.rv{--soft:var(--isoft);color:var(--ink)}
+.sheet{background:var(--card);border-radius:16px;width:min(860px,100%);max-height:100%;overflow:auto;padding:16px 18px 18px;display:grid;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.mhead{display:flex;align-items:center;gap:12px}
+.mhead b{font-family:var(--f-display);font-weight:400;font-size:26px}
+.coinpill{font-family:var(--f-num);font-weight:600;background:#efe7cf;border-radius:999px;padding:3px 12px;display:inline-flex;gap:6px;align-items:center}
+.mhead .x{margin-left:auto;border:none;background:none;font-size:22px;color:var(--isoft);padding:4px 8px}
+.choose{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.opt{text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;display:grid;gap:4px}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt b{font-family:var(--f-display);font-weight:400;font-size:22px}
+.opt .d{font-size:14px;color:var(--isoft)}
+.opt .c{font-family:var(--f-num);font-weight:600;display:flex;align-items:center;gap:6px}
+.opt:disabled{opacity:.5}
+.opt .no{color:var(--bad);font-size:13px;font-family:var(--f-body);font-weight:500}
+.note{font-size:14px;color:var(--isoft);margin:0}
+.qhead{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{font-size:13.5px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.chip.k{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.chip.c{font-family:var(--f-num)}
+.stake{margin-left:auto;font-size:14px;color:var(--bad);font-weight:500}
+.pbody{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:16px}
+.pfig{display:flex;flex-direction:column;gap:8px;min-width:0}
+#fig svg{width:100%;max-height:min(300px,38vh);display:block;margin:0 auto}
+.prompt b{font-family:var(--f-display);font-weight:400;font-size:22px}
+.fb{border-radius:10px;padding:10px 14px;display:grid;gap:4px}
+.fb.bad{background:var(--bad-bg)}.fb.ok{background:var(--ok-bg)}
+.fb .h{font-weight:700}
+.fb.bad .h{color:var(--bad)}.fb.ok .h{color:var(--ok)}
+.fb .ln{font-family:var(--f-num);font-size:15px}
+.fb .fin{font-family:var(--f-num);font-size:18px;font-weight:600;color:var(--mark)}
+.pad{display:flex;flex-direction:column;gap:8px}
+.disp{border:1.5px solid var(--ink);border-radius:12px;padding:8px 14px;display:flex;align-items:baseline;gap:10px;min-height:62px;background:#fff}
+.disp .x{font-family:var(--f-num);font-size:20px;color:var(--mark);font-style:italic}
+.disp .val{font-family:var(--f-num);font-size:34px;font-weight:600}
+.disp .val:empty::after{content:"";display:inline-block;width:3px;height:28px;background:var(--ink);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.keys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.key{font-family:var(--f-num);font-size:22px;font-weight:600;height:52px;border-radius:10px;background:var(--key);border:1px solid var(--key-edge);border-bottom-width:3px;color:var(--ink)}
+.key:active{transform:translateY(2px);border-bottom-width:1px}
+.key.go{background:var(--mark);border-color:var(--mark);color:#fff;font-family:var(--f-display);font-weight:400}
+.cancel{border:none;background:none;color:var(--isoft);font-size:14px;text-decoration:underline;justify-self:start;padding:2px 0}
+
+/* results */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.stats .v{font-family:var(--f-num);font-size:28px;font-weight:600}
+.typebars{display:grid;gap:8px;max-width:620px}
+.tb{display:grid;grid-template-columns:110px minmax(0,1fr) 60px;gap:12px;align-items:center;font-size:14.5px}
+.tb .track{height:12px;background:rgba(0,0,0,.3);border-radius:6px;overflow:hidden}
+.tb .track i{display:block;height:100%;background:var(--gold)}
+.tb .n{font-family:var(--f-num);text-align:right}
+.review{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.rv{background:var(--card);border-radius:12px;padding:10px 12px;display:grid;gap:4px;min-width:0}
+.rv svg{width:100%;height:auto}
+.rv .who{font-size:14px}.rv .who s{color:var(--bad)}
+.rv .ln{font-family:var(--f-num);font-size:13px;color:var(--isoft)}
+
+/* figure */
+.dg .ln{stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+.dg .aux{stroke:var(--isoft);stroke-width:1.6;stroke-dasharray:5 5}
+.dg .chev{stroke:var(--mark);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.dg .dot{fill:var(--ink)}
+.dg text{text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:var(--card);stroke-width:5px;stroke-linejoin:round}
+.dg .pt{font-family:var(--f-body);font-size:14px;font-style:italic;fill:var(--isoft)}
+.dg .val{font-family:var(--f-num);font-size:16px;font-weight:600;fill:var(--ink)}
+.dg .val.x,.dg .val.xr{fill:var(--mark);font-size:20px}
+.dg .val.x{font-style:italic}
+
+.resume{display:grid;gap:10px;background:rgba(244,197,66,.1);border:1.5px solid rgba(244,197,66,.45);border-radius:14px;padding:14px 16px}
+.resume h2{margin:0}
+.save{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}
+.save .sinfo{display:grid;flex:1;min-width:200px;line-height:1.35}
+.save .sinfo b{font-family:var(--f-display);font-weight:400;font-size:21px;color:var(--gold)}
+.save .sinfo span{font-size:14px}.save .when{color:var(--soft);font-size:12.5px!important}
+.save .btn{font-size:18px;padding:8px 16px}.save .del{font-size:15px;padding:7px 12px}
+.coderow{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.coderow input{flex:1;min-width:0;font-family:var(--f-num);font-size:14px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--soft);background:rgba(0,0,0,.25);color:var(--fg)}
+.coderow .btn{font-size:18px;padding:8px 16px}
+details.codebox summary{cursor:pointer;color:var(--soft);font-size:15px}
+details.codebox[open]{display:grid;gap:8px}
+#codeOut{width:100%;min-height:110px;font-family:var(--f-num);font-size:12.5px;line-height:1.4;padding:10px 12px;border-radius:10px;border:1.5px solid var(--soft);background:rgba(0,0,0,.25);color:var(--fg);resize:vertical;word-break:break-all}
+.saveinfo{font-size:13px;color:var(--soft)}
+@media (max-width:900px){.modesel{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.qtimer{flex-basis:100%;display:flex;align-items:center;gap:10px;font-family:var(--f-num);font-weight:600;font-size:14px}
+.qtimer .tr{flex:1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.qtimer .tr i{display:block;height:100%;background:var(--ink);transform-origin:left}
+.qtimer.low .tr i{background:var(--bad)}.qtimer.low{color:var(--bad)}
+#pandBtn{background:#b48cff;box-shadow:0 3px 0 #7a55c9;color:#1e1036}
+.speed{display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,.25);border-radius:12px;padding:4px}
+.speed .label{padding:0 6px 0 4px}
+.speed button{font-family:var(--f-num);font-weight:600;font-size:16px;min-width:44px;height:38px;border:none;border-radius:9px;background:transparent;color:var(--fg);cursor:pointer;touch-action:manipulation}
+.speed button[aria-pressed="true"]{background:var(--gold);color:#2a2008}
+.speed button:hover:not([aria-pressed="true"]){background:rgba(255,255,255,.08)}
+@media (max-width:720px){
+  .pbody{grid-template-columns:minmax(0,1fr)}
+  .howto,.modesel{grid-template-columns:minmax(0,1fr)}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hud{gap:6px 16px}.hud .v{font-size:20px}.hpbar{width:80px}
+  .key{height:46px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <section class="panel" id="startPanel">
+    <div>
+      <div class="label">중학교 2학년 · 평행선과 선분의 길이의 비</div>
+      <h1>평행선 <em>수비대</em></h1>
+      <p>귀여운 몬스터들이 길을 따라 성으로 몰려옵니다. 영웅을 움직여 탑을 짓고 강화하세요. 그때마다 문제를 맞혀야 하고, 틀리면 낸 코인은 돌려받지 못합니다.</p>
+    </div>
+    <div class="resume" id="resumeSec" hidden>
+      <h2>저장된 게임 이어하기</h2>
+      <div id="saves" style="display:grid;gap:10px"></div>
+    </div>
+    <div class="howto">
+      <div><b>영웅을 움직여 건설</b><span>화면을 누르거나 끌어서, 또는 방향키·WASD로 이동해요. 빈 터 위에 잠깐 서 있으면 건설 메뉴가 열려요.</span></div>
+      <div><b>정답이면 완성, 오답이면 손해</b><span>비용을 먼저 내고 문제를 풀어요. 문제를 본 뒤 창을 닫아도 코인은 돌아오지 않아요. 비싼 탑일수록 문제의 수가 커져요.</span></div>
+      <div><b>보너스 · 판도라 문제</b><span>코인은 몬스터를 쓰러뜨리면 자동으로 들어와요. 보너스 문제(0~15코인)와 판도라 문제(아무 탑 하나가 1단계 강화 또는 약화)는 각각 1분에 한 번 풀 수 있어요.</span></div>
+    </div>
+    <div>
+      <h2>난이도</h2>
+      <div class="modesel" id="modeSel" role="radiogroup" aria-label="난이도"></div>
+    </div>
+    <div>
+      <h2>출제 유형</h2>
+      <div class="chips" id="topics"></div>
+    </div>
+    <div class="row">
+      <button class="btn" id="startBtn">성 지키러 가기 →</button>
+      <span class="warn" id="warn" hidden>유형을 하나 이상 골라 주세요.</span>
+      <span class="label" id="bestLbl"></span>
+    </div>
+    <p class="warn" id="overwrite" hidden style="margin:0"></p>
+    <details class="codebox">
+      <summary>다른 기기에서 하던 게임이 있나요? 저장 코드로 이어하기</summary>
+      <div class="coderow"><input id="codeIn" type="text" placeholder="PD1- 로 시작하는 저장 코드를 붙여 넣으세요" autocomplete="off" spellcheck="false"><button class="btn" id="codeLoad">불러오기</button></div>
+      <p class="warn" id="codeMsg" hidden style="margin:0"></p>
+    </details>
+  </section>
+
+  <section class="panel" id="overPanel" hidden>
+    <div>
+      <div class="label" id="overLbl">성이 함락됐어요</div>
+      <h1 id="overTitle">웨이브 3까지 방어</h1>
+    </div>
+    <div class="stats">
+      <div><div class="label">처치한 몬스터</div><div class="v" id="oKills">0</div></div>
+      <div><div class="label">푼 문제</div><div class="v" id="oTotal">0</div></div>
+      <div><div class="label">정답률</div><div class="v" id="oAcc">–</div></div>
+      <div><div class="label">오답으로 잃은 코인</div><div class="v" id="oLost">0</div></div>
+    </div>
+    <div class="typebars" id="typeBars"></div>
+    <div class="row"><button class="btn" id="againBtn">다시 하기</button><button class="btn ghost" id="homeBtn">유형 바꾸기</button></div>
+  </section>
+
+  <section class="panel" id="savedPanel" hidden>
+    <div>
+      <div class="label">게임을 저장했어요</div>
+      <h1 style="font-size:clamp(34px,6vw,52px)">다음 시간에 이어서!</h1>
+      <p id="savedInfo"></p>
+    </div>
+    <p>이 기기와 이 브라우저에서는 첫 화면의 <b>저장된 게임 이어하기</b>를 누르면 바로 이어져요. 다른 기기에서 이어 하려면 아래 저장 코드를 복사해 두었다가 첫 화면에 붙여 넣으세요.</p>
+    <textarea id="codeOut" readonly aria-label="저장 코드"></textarea>
+    <div class="row"><button class="btn" id="copyBtn">저장 코드 복사</button><button class="btn ghost" id="savedHome">첫 화면으로</button><span class="label" id="copyMsg"></span></div>
+  </section>
+
+  <div id="game" hidden>
+    <div class="hud">
+      <span class="modechip" id="hMode">노말</span>
+      <div class="stat gold"><span class="label">코인</span><span class="v"><span class="coin"></span> <span id="hCoins">0</span></span></div>
+      <div class="stat"><span class="label">성 체력 <span id="hHpN">20</span></span><span class="hpbar"><i id="hHp" style="width:100%"></i></span></div>
+      <div class="stat"><span class="label">웨이브</span><span class="v" id="hWave">0 / 12</span></div>
+      <div class="stat"><span class="label">정답 / 푼 문제</span><span class="v" id="hAcc">0 / 0</span></div>
+    </div>
+    <div class="stage" style="margin-top:10px">
+      <canvas id="cv" width="960" height="600" aria-label="게임 화면: 누른 곳으로 영웅이 이동합니다"></canvas>
+      <div class="toast" id="toast"></div>
+    </div>
+    <div class="actions" style="margin-top:10px">
+      <button class="btn" id="bonusBtn"><span class="coin"></span> 보너스 문제 0~15</button>
+      <button class="btn" id="pandBtn"><span class="coin"></span> 판도라 문제</button>
+      <button class="btn ghost" id="waveBtn">지금 시작</button>
+      <div class="speed" id="speed" role="group" aria-label="게임 속도"><span class="label">속도</span><button data-s="1" aria-pressed="true">×1</button><button data-s="2" aria-pressed="false">×2</button><button data-s="3" aria-pressed="false">×3</button><button data-s="4" aria-pressed="false">×4</button><button data-s="5" aria-pressed="false">×5</button></div>
+      <span class="label" id="waveInfo"></span>
+      <span style="flex:1"></span>
+      <span class="saveinfo" id="saveInfo"></span>
+      <button class="btn ghost" id="saveExit" style="font-size:17px;padding:8px 14px">저장하고 나가기</button>
+    </div>
+    <p class="help" style="margin-top:8px">영웅을 점선 사각형(빈 터) 위에 세우면 건설, 지은 탑 위에 세우면 강화예요. 성 옆 노란 원은 영웅 훈련소예요. 영웅은 가까운 몬스터를 칼로 공격하고, 탑과 영웅은 Lv.10까지 키울 수 있어요. 문제를 푸는 동안 시간은 느리게 흘러요.</p>
+  </div>
+
+  <section id="reviewSec" hidden>
+    <h2>틀린 문제 다시 보기</h2>
+    <div class="review" id="review"></div>
+  </section>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="mhead"><b id="mTitle">빈 터</b><span class="coinpill"><span class="coin"></span><span id="mCoins">0</span></span><button class="x" id="mClose" aria-label="닫기">✕</button></div>
+    <div id="choose" class="choose"></div>
+    <p class="note" id="chooseNote"></p>
+    <div id="prob" hidden style="display:grid;gap:10px">
+      <div class="qhead"><span class="chip k" id="qType"></span><span class="chip c" id="qCond"></span><span class="stake" id="stake"></span><div class="qtimer" id="qTimer" hidden><span class="tr"><i id="qTimerFill"></i></span><span id="qTimerTxt">10초</span></div></div>
+      <div class="pbody">
+        <div class="pfig">
+          <div id="fig"></div>
+          <div class="prompt"><b><i>x</i>의 값은?</b></div>
+          <div class="fb" id="fb" hidden aria-live="polite"><div class="h" id="fbHead"></div><div id="fbLines"></div></div>
+        </div>
+        <div class="pad">
+          <div class="disp"><span class="x">x =</span><span class="val" id="ans"></span></div>
+          <div class="keys" id="keys">
+            <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+            <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+            <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+            <button class="key" data-k="del" aria-label="지우기">⌫</button><button class="key" data-k="0">0</button><button class="key go" data-k="ok" id="okKey">확인</button>
+          </div>
+          <button class="cancel" id="cancelBtn">풀지 않고 닫기 (낸 코인은 돌려받지 못해요)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const $=s=>document.querySelector(s);
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function pair(max){let p,q;do{p=R(1,max);q=R(1,max)}while(p===q||gcd(p,q)!==1);return[p,q]}
+
+/* ---------- geometry helpers ---------- */
+const V=(x,y)=>({x,y}),sub=(a,b)=>V(a.x-b.x,a.y-b.y),add=(a,b)=>V(a.x+b.x,a.y+b.y),mul=(a,k)=>V(a.x*k,a.y*k);
+const unit=a=>{const l=Math.hypot(a.x,a.y)||1;return V(a.x/l,a.y/l)};
+const lerp=(A,B,t)=>add(A,mul(sub(B,A),t));
+const n1=n=>n.toFixed(1);
+const L=(A,B,c='ln')=>`<line class="${c}" x1="${n1(A.x)}" y1="${n1(A.y)}" x2="${n1(B.x)}" y2="${n1(B.y)}"/>`;
+const Dt=A=>`<circle class="dot" cx="${n1(A.x)}" cy="${n1(A.y)}" r="2.6"/>`;
+function Pt(A,name,dir,off=14){const p=add(A,mul(unit(dir),off));return `<text class="pt" x="${n1(p.x)}" y="${n1(p.y)}">${name}</text>`}
+function Chev(A,B,t=.3){const M=lerp(A,B,t),d=unit(sub(B,A)),n=V(-d.y,d.x);
+  const a=add(sub(M,mul(d,4)),mul(n,4.5)),b=add(M,mul(d,3)),c=sub(sub(M,mul(d,4)),mul(n,4.5));
+  return `<polyline class="chev" points="${n1(a.x)},${n1(a.y)} ${n1(b.x)},${n1(b.y)} ${n1(c.x)},${n1(c.y)}"/>`}
+function Lab(A,B,txt,ref,cls){const M=lerp(A,B,.5),d=unit(sub(B,A));let n=V(-d.y,d.x);
+  if((ref.x-M.x)*n.x+(ref.y-M.y)*n.y>0)n=mul(n,-1);
+  const off=(cls?15:13)+String(txt).length*4*Math.abs(n.x);const p=add(M,mul(n,off));
+  return `<text class="val ${cls}" x="${n1(p.x)}" y="${n1(p.y)}">${txt}</text>`}
+function LB(P,rev,k,A,B,ref){if(k===P.unk)return Lab(A,B,rev?P.ans:'x',ref,rev?'xr':'x');return Lab(A,B,P.v[k],ref,'')}
+const svg=inner=>`<svg class="dg" viewBox="-14 0 348 236" role="img" aria-label="문제 그림">${inner}</svg>`;
+
+/* ---------- drawings ---------- */
+function drawTri(P,rev){
+  const A=V(P.ax,28),B=V(26,212),C=V(294,212),t=clamp(P.t,.34,.7),D=lerp(A,B,t),E=lerp(A,C,t);
+  const G=V((A.x+B.x+C.x)/3,(A.y+B.y+C.y)/3),BCm=lerp(B,C,.5);
+  let s=L(A,B)+L(A,C)+L(B,C)+L(D,E)+Chev(D,E,.62)+Chev(B,C,.62)+[A,B,C,D,E].map(Dt).join('');
+  s+=Pt(A,'A',V(0,-1))+Pt(B,'B',sub(B,G))+Pt(C,'C',sub(C,G))+Pt(D,'D',V(-1,-.35))+Pt(E,'E',V(1,-.35));
+  if(P.type==='tri')s+=LB(P,rev,'AD',A,D,C)+LB(P,rev,'DB',D,B,C)+LB(P,rev,'DE',D,E,BCm)+LB(P,rev,'BC',B,C,A);
+  else s+=LB(P,rev,'AD',A,D,C)+LB(P,rev,'DB',D,B,C)+LB(P,rev,'AE',A,E,B)+LB(P,rev,'EC',E,C,B);
+  return svg(s)}
+function drawHour(P,rev){
+  const r=clamp(P.r,.5,1.1),h=190/(1+r),cx=160+P.sk,B=V(60,214),C=V(260,214),A=V(cx,214-h);
+  const D=add(A,mul(sub(A,B),r)),E=add(A,mul(sub(A,C),r));
+  let s=L(B,D)+L(C,E)+L(E,D)+L(B,C)+Chev(E,D,.62)+Chev(B,C,.62)+[A,B,C,D,E].map(Dt).join('');
+  s+=Pt(A,'A',V(1,0),15)+Pt(B,'B',V(-.4,1))+Pt(C,'C',V(.4,1))+Pt(D,'D',V(.4,-1))+Pt(E,'E',V(-.4,-1));
+  s+=LB(P,rev,'AD',A,D,E)+LB(P,rev,'AB',B,A,C)+LB(P,rev,'DE',E,D,A)+LB(P,rev,'BC',B,C,A);
+  return svg(s)}
+function drawLines(P,rev){
+  const Y1=34,Y3=204,f=clamp(P.v.a/(P.v.a+P.v.b),.3,.7),Y2=Y1+(Y3-Y1)*f;
+  const t1=[92+P.sk,50],t2=[214-P.sk,270],X=(t,y)=>t[0]+(t[1]-t[0])*(y-Y1)/(Y3-Y1);
+  let s='';const names=['l','m','n'];
+  [Y1,Y2,Y3].forEach((y,i)=>{s+=L(V(4,y),V(300,y))+Chev(V(130,y),V(170,y),.5)+`<text class="pt" x="314" y="${n1(y)}">${names[i]}</text>`});
+  s+=L(V(X(t1,12),12),V(X(t1,226),226))+L(V(X(t2,12),12),V(X(t2,226),226));
+  const p=[Y1,Y2,Y3].map(y=>V(X(t1,y),y)),q=[Y1,Y2,Y3].map(y=>V(X(t2,y),y));
+  s+=p.map(Dt).join('')+q.map(Dt).join('');
+  s+=LB(P,rev,'a',p[0],p[1],V(500,120))+LB(P,rev,'b',p[1],p[2],V(500,120))+LB(P,rev,'c',q[0],q[1],V(-300,120))+LB(P,rev,'d',q[1],q[2],V(-300,120));
+  return svg(s)}
+function drawTrap(P,rev){
+  const B=V(22,212),C=V(298,212),w=clamp(P.v.AD/P.v.BC,.3,.7)*276,cx=160+P.sk,A=V(cx-w/2,40),D=V(cx+w/2,40);
+  const f=clamp(P.m/(P.m+P.n),.28,.72),E=lerp(A,B,f),F=lerp(D,C,f),up=V(cx,400);
+  let s=L(A,D)+L(D,C)+L(C,B)+L(B,A)+L(E,F)+Chev(A,D,.7)+Chev(E,F,.72)+Chev(B,C,.72);
+  if(rev){const G=lerp(A,C,f);s+=L(A,C,'aux')+Dt(G)+Pt(G,'G',V(.3,1),15)}
+  s+=[A,B,C,D,E,F].map(Dt).join('');
+  s+=Pt(A,'A',V(-.3,-1))+Pt(D,'D',V(.3,-1))+Pt(B,'B',V(-.4,1))+Pt(C,'C',V(.4,1))+Pt(E,'E',V(-1,-.2))+Pt(F,'F',V(1,-.2));
+  s+=LB(P,rev,'AD',A,D,up)+LB(P,rev,'BC',B,C,A)+LB(P,rev,'EF',E,F,up)+LB(P,rev,'AE',A,E,C)+LB(P,rev,'EB',E,B,C);
+  return svg(s)}
+
+/* ---------- problem generators (all answers are whole numbers) ---------- */
+function mk(v,unk){return k=>k===unk?'x':v[k]}
+function genTri(l){
+  const[p,q]=pair(3+l),s=R(1,2+l),r=R(1,2+l),v={AD:p*s,DB:q*s,DE:p*r,BC:(p+q)*r};
+  const unk=pick(['DE','DE','BC','BC','AD','DB']),f=mk(v,unk);
+  const ex=(unk==='DE'||unk==='BC')?['AD : AB = DE : BC',`${v.AD} : ${v.AD+v.DB} = ${f('DE')} : ${f('BC')}`]
+    :['AD : DB = DE : (BC − DE)',`${f('AD')} : ${f('DB')} = ${v.DE} : ${v.BC-v.DE}`];
+  return{v,unk,ans:v[unk],ex,t:p/(p+q),ax:R(118,202)}}
+function genSide(l){
+  const[p,q]=pair(3+l),s=R(1,2+l);let t;do{t=R(1,2+l)}while(t===s);
+  const v={AD:p*s,DB:q*s,AE:p*t,EC:q*t},unk=pick(['AD','DB','AE','EC']),f=mk(v,unk);
+  return{v,unk,ans:v[unk],ex:['AD : DB = AE : EC',`${f('AD')} : ${f('DB')} = ${f('AE')} : ${f('EC')}`],t:p/(p+q),ax:R(118,202)}}
+function genHour(l){
+  const[p,q]=pair(3+l),s=R(1,2+l);let r;do{r=R(1,2+l)}while(r===s&&l>0);
+  const v={AD:p*s,AB:q*s,DE:p*r,BC:q*r},unk=pick(['AD','AB','DE','BC','DE','BC']),f=mk(v,unk);
+  return{v,unk,ans:v[unk],ex:['AD : AB = DE : BC',`${f('AD')} : ${f('AB')} = ${f('DE')} : ${f('BC')}`],r:p/q,sk:R(-15,15)}}
+function genLines(l){
+  const[p,q]=pair(3+l),s=R(1,2+l);let t;do{t=R(1,2+l)}while(t===s);
+  const v={a:p*s,b:q*s,c:p*t,d:q*t},unk=pick(['a','b','c','d']),f=mk(v,unk);
+  return{v,unk,ans:v[unk],ex:['l ∥ m ∥ n → 왼쪽 위 : 아래 = 오른쪽 위 : 아래',`${f('a')} : ${f('b')} = ${f('c')} : ${f('d')}`],sk:R(-14,14)}}
+function genTrap(l){
+  const[m,n]=pair(2+Math.min(l,2)),j=R(1,2+(l>>1)),k=R(1,2+(l>>1)),u=R(1,2+l);
+  const AD=(m+n)*j,BC=(m+n)*(j+k),EF=AD+m*k,AE=m*u,EB=n*u,AB=AE+EB,EG=m*(j+k),GF=n*j;
+  const v={AD,BC,EF,AE,EB},unk=pick(['EF','EF','EF','BC','AD']),g='대각선 AC가 EF와 만나는 점을 G라 하면';let ex;
+  if(unk==='EF')ex=[g,`EG = ${BC} × ${AE}/${AB} = ${EG}`,`GF = ${AD} × ${EB}/${AB} = ${GF}`,`x = ${EG} + ${GF}`];
+  else if(unk==='BC')ex=[g,`GF = ${AD} × ${EB}/${AB} = ${GF}`,`EG = ${EF} − ${GF} = ${EG}`,`EG : BC = AE : AB → ${EG} : x = ${AE} : ${AB}`];
+  else ex=[g,`EG = ${BC} × ${AE}/${AB} = ${EG}`,`GF = ${EF} − ${EG} = ${GF}`,`GF : AD = EB : AB → ${GF} : x = ${EB} : ${AB}`];
+  return{v,unk,ans:v[unk],ex,m,n,sk:R(-18,18)}}
+
+const TYPES={
+  tri:{name:'삼각형 ①',cond:'DE ∥ BC',rule:'AD : AB = AE : AC = DE : BC',gen:genTri,draw:drawTri},
+  side:{name:'삼각형 ②',cond:'DE ∥ BC',rule:'AD : DB = AE : EC',gen:genSide,draw:drawTri},
+  hour:{name:'모래시계',cond:'DE ∥ BC',rule:'AD : AB = AE : AC = DE : BC',gen:genHour,draw:drawHour},
+  lines:{name:'평행선 세 개',cond:'l ∥ m ∥ n',rule:'잘린 선분의 비가 같다',gen:genLines,draw:drawLines},
+  trap:{name:'사다리꼴',cond:'AD ∥ EF ∥ BC',rule:'대각선을 그어 EF = EG + GF',gen:genTrap,draw:drawTrap},
+};
+const ORDER=['tri','side','hour','lines','trap'];
+
+
+/* ================= game ================= */
+const cv=$('#cv'),ctx=cv.getContext('2d'),W=960,H=600;
+const PATH=[[-40,100],[170,100],[230,470],[470,505],[530,190],[760,165],[810,370],[905,370]].map(([x,y])=>V(x,y));
+const SEGS=[];let PLEN=0;
+for(let i=0;i<PATH.length-1;i++){const a=PATH[i],b=PATH[i+1],l=Math.hypot(b.x-a.x,b.y-a.y);SEGS.push({a,b,l,s:PLEN});PLEN+=l}
+function posAt(d){for(const s of SEGS)if(d<=s.s+s.l)return lerp(s.a,s.b,(d-s.s)/s.l);return PATH[PATH.length-1]}
+function distPath(p){let m=1e9;for(const s of SEGS){const ab=sub(s.b,s.a),t=clamp(((p.x-s.a.x)*ab.x+(p.y-s.a.y)*ab.y)/(s.l*s.l),0,1);
+  const q=lerp(s.a,s.b,t);m=Math.min(m,Math.hypot(p.x-q.x,p.y-q.y))}return m}
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const SLOTS=[[95,178],[262,200],[132,318],[305,360],[372,420],[432,300],[575,425],[612,320],[640,92],[700,265],[850,185],[300,565]].map(([x,y])=>V(x,y));
+const CASTLE=V(905,345),HERO_PAD=V(805,490),PADS=[...SLOTS,HERO_PAD],HP_ID=SLOTS.length,MAXLV=10;
+const gl=(a,r)=>Array.from({length:MAXLV},(_,i)=>Math.round(a*Math.pow(r,i)));
+const ar=f=>Array.from({length:MAXLV},(_,i)=>+f(i).toFixed(3));
+
+const TW={
+  archer:{name:'궁수탑',desc:'빠른 화살로 한 명씩 공격해요.',good:'토끼 · 유령',bad:'단단거북',cost:gl(30,1.32),rng:ar(i=>150+i*6),dmg:gl(6,1.36),rate:ar(i=>Math.max(.34,.8-.05*i)),pl:0},
+  cannon:{name:'대포탑',desc:'터지는 포탄으로 주변까지 공격. 떠 있는 유령은 못 맞혀요.',good:'병아리 떼 · 거북',bad:'유령',cost:gl(50,1.32),rng:ar(i=>130+i*5),dmg:gl(14,1.36),rate:ar(i=>1.6-.05*i),splash:ar(i=>50+i*3),pl:1},
+  frost:{name:'얼음탑',desc:'얼음 조각을 맞은 적은 잠깐 느려져요.',good:'토끼 · 모두 느리게',bad:'혼자서는 약해요',cost:gl(40,1.32),rng:ar(i=>120+i*5),dmg:gl(2,1.36),rate:ar(i=>1-.03*i),slow:ar(i=>Math.min(.62,.3+.035*i)),splash:ar(i=>42+i*1.5),pl:1},
+  bolt:{name:'번개탑',desc:'번개가 가까운 적에게 차례로 튀어요.',good:'병아리 떼 · 유령',bad:'단단거북',cost:gl(60,1.32),rng:ar(i=>140+i*5),dmg:gl(9,1.35),chain:ar(i=>3+Math.floor(i*.6)),rate:ar(i=>1.1-.04*i),pl:2},
+  sniper:{name:'저격탑',desc:'아주 멀리서 체력이 가장 많은 적을 저격. 껍질(방어력)을 무시해요.',good:'단단거북 · 왕슬라임',bad:'병아리 떼',cost:gl(70,1.32),rng:ar(i=>240+i*8),dmg:gl(40,1.36),rate:ar(i=>2.4-.06*i),pl:2},
+};
+const TORDER=['archer','cannon','frost','bolt','sniper'];
+const HERO={dmg:gl(8,1.36),rng:ar(i=>50+i*2),rate:ar(i=>Math.max(.22,.45-.025*i)),cost:gl(40,1.32)};
+const MON={
+  slime:{name:'말랑슬라임',hp:1,spd:1,rw:3,cols:['#86dba8','#ffa8c8','#9fd0ff','#ffd28a']},
+  bunny:{name:'깡총토끼',hp:.55,spd:1.75,rw:3},
+  chick:{name:'삐약병아리',hp:.35,spd:1.25,rw:1,gap:.3},
+  turtle:{name:'단단거북',hp:1.5,spd:.7,rw:5,arm:1},
+  ghost:{name:'둥실유령',hp:.9,spd:1.05,rw:4,fly:true},
+  king:{name:'왕슬라임',hp:9,spd:.55,rw:30,arm:.6,dmg:5,cols:['#ff9cc0']},
+};
+const MODES={
+  normal:{name:'노말',waves:40,coins:70,hp:20,hpBase:15,hpGrow:1.098,armor:.3,clear:[8,2],rwGrow:.08,desc:'처음 해 보는 사람에게 알맞아요. 40웨이브를 막으면 승리!'},
+  hard:{name:'하드',waves:60,coins:50,hp:10,hpBase:18,hpGrow:1.086,armor:.45,clear:[4,1],rwGrow:.07,desc:'보너스 문제까지 거의 모두 맞혀야 깰 수 있어요. 60웨이브.'},
+  ultimate:{name:'얼티메이트',waves:80,coins:60,hp:10,hpBase:18,hpGrow:1.069,armor:.7,clear:[6,2],rwGrow:.07,themed:true,desc:'웨이브마다 몬스터 특성이 달라요. 맞는 탑을 골라 키워야만 깰 수 있어요. 80웨이브.'},
+  challenge:{name:'도전',waves:80,coins:60,hp:8,hpBase:20,hpGrow:1.067,armor:.75,clear:[6,2],rwGrow:.07,themed:true,timer:10,desc:'얼티메이트보다 어렵고, 모든 문제를 10초 안에 풀어야 해요. 문제를 틀리면 지어 둔 탑 하나가 무작위로 무너져요. 80웨이브.'},
+};
+const ULT=['slime','bunny','chick','turtle','ghost+king','bunny','turtle','chick','ghost','turtle+king','mix','ghost','bunny','turtle','mix+king'];
+const BONUS_CD=60,PAND_CD=60;
+
+/* ---------- static background ---------- */
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;
+(function paintBg(){const g=bg.getContext('2d');if(!g||!g.fillRect)return;let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  g.fillStyle='#64b04f';g.fillRect(0,0,W,H);
+  for(let i=0;i<70;i++){g.fillStyle=rnd()<.5?'rgba(255,255,160,.06)':'rgba(0,70,0,.07)';g.beginPath();g.ellipse(rnd()*W,rnd()*H,30+rnd()*70,18+rnd()*40,rnd()*3,0,7);g.fill()}
+  const ok=(p,r)=>distPath(p)>r+34&&PADS.every(s=>Math.hypot(s.x-p.x,s.y-p.y)>r+40)&&Math.hypot(CASTLE.x-p.x,CASTLE.y-p.y)>r+70;
+  for(let i=0,n=0;i<200&&n<9;i++){const p=V(rnd()*W,rnd()*H),r=18+rnd()*22;if(!ok(p,r))continue;n++;
+    g.fillStyle='rgba(0,0,0,.18)';g.beginPath();g.ellipse(p.x+5,p.y+8,r*1.1,r*.7,0,0,7);g.fill();
+    g.fillStyle='#9d9a8f';g.beginPath();g.roundRect(p.x-r,p.y-r*.8,r*2,r*1.5,r*.4);g.fill();
+    g.fillStyle='#c3c0b4';g.beginPath();g.roundRect(p.x-r*.9,p.y-r*.85,r*1.8,r*.8,r*.35);g.fill()}
+  for(let i=0,n=0;i<400&&n<26;i++){const p=V(rnd()*W,rnd()*H),r=12+rnd()*10;if(!ok(p,r))continue;n++;
+    g.fillStyle='rgba(0,0,0,.2)';g.beginPath();g.ellipse(p.x+4,p.y+r*.8,r,r*.45,0,0,7);g.fill();
+    g.fillStyle='#2f7a3a';g.beginPath();g.arc(p.x,p.y,r,0,7);g.fill();
+    g.fillStyle='#3f9348';g.beginPath();g.arc(p.x-r*.25,p.y-r*.3,r*.65,0,7);g.fill()}
+  for(let i=0;i<60;i++){const p=V(rnd()*W,rnd()*H);if(distPath(p)<36)continue;g.fillStyle=rnd()<.5?'#f6f2d0':'#f2c94c';g.fillRect(p.x,p.y,2.5,2.5)}
+  g.lineCap='round';g.lineJoin='round';const tr=()=>{g.beginPath();PATH.forEach((p,i)=>i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y))};
+  tr();g.strokeStyle='rgba(0,0,0,.12)';g.lineWidth=64;g.stroke();
+  tr();g.strokeStyle='#bc9e6b';g.lineWidth=56;g.stroke();
+  tr();g.strokeStyle='#dcc697';g.lineWidth=46;g.stroke();
+  tr();g.strokeStyle='rgba(255,255,255,.13)';g.lineWidth=16;g.stroke();
+  for(let d=10;d<PLEN;d+=26){const p=posAt(d);g.fillStyle='rgba(120,90,50,.18)';g.beginPath();g.arc(p.x+(rnd()-.5)*30,p.y+(rnd()-.5)*30,1.8,0,7);g.fill()}
+})();
+
+/* ---------- state ---------- */
+let topics=new Set(ORDER),gmode='normal';
+try{const t=JSON.parse(localStorage.getItem('pdef-topics')||'null');if(Array.isArray(t)){const f=t.filter(x=>TYPES[x]);if(f.length)topics=new Set(f)}
+  const m=localStorage.getItem('pdef-mode');if(MODES[m])gmode=m}catch(e){}
+const getBest=m=>{try{return JSON.parse(localStorage.getItem('pdef-best2-'+m)||'null')}catch(e){return null}};
+let G=null,modal=null;
+const keys=new Set();
+
+function newGame(mode){const M=MODES[mode];
+  G={mode,coins:M.coins,hp:M.hp,maxHp:M.hp,wave:0,phase:'build',cd:20,enemies:[],towers:SLOTS.map(()=>null),proj:[],fx:[],queue:[],spawnT:0,
+     over:false,won:false,correct:0,total:0,per:{},wrongs:[],kills:0,lost:0,banner:0,shake:0,lastType:null,bonusCd:0,pandCd:0,pandUses:0,
+     drops:[],hero:{p:V(760,440),target:null,spd:200,lvl:1,cd:0,swing:0,face:V(-1,0),walk:0,pad:null,padT:0,lock:null}};
+  G.nextComp=waveComp(1);keys.clear()}
+
+/* ---------- waves ---------- */
+function waveComp(n){const M=MODES[G.mode],cnt=Math.min(28,6+Math.floor(n*.8)),out=[];
+  const put=k=>{if(k==='chick')out.push('chick','chick','chick');else out.push(k)};
+  if(M.themed){const th=ULT[(n-1)%ULT.length],main=th.split('+')[0];
+    for(let i=0;i<cnt;i++)put(main==='mix'?pick(['slime','bunny','chick','turtle','ghost']):(Math.random()<.75?main:'slime'));
+    if(th.includes('king'))out.push('king')}
+  else{const un=['bunny',n>=3&&'chick',n>=4&&'turtle',n>=6&&'ghost'].filter(Boolean);
+    for(let i=0;i<cnt;i++)put(n===1||Math.random()<.5?'slime':pick(un));
+    if(n%5===0)out.push('king')}
+  return out}
+function compText(c){const m={};c.forEach(k=>m[k]=(m[k]||0)+1);return Object.keys(MON).filter(k=>m[k]).map(k=>`${MON[k].name} ×${m[k]}`).join(' · ')}
+function startWave(){G.wave++;G.phase='fight';G.queue=G.nextComp.slice();G.spawnT=0;G.banner=1.6;toast(`웨이브 ${G.wave} 시작!`)}
+function spawn(kind){const n=G.wave,M=MODES[G.mode],T=MON[kind],hp=Math.round(M.hpBase*Math.pow(M.hpGrow,n-1)*T.hp);
+  G.enemies.push({kind,d:0,hp,max:hp,spd:Math.min(72,38+n*1.6)*T.spd,arm:T.arm?Math.round(T.arm*(2+n*M.armor)):0,fly:!!T.fly,rw:Math.round(T.rw*(1+n*M.rwGrow)),dmg:T.dmg||1,
+    wob:Math.random()*6,off:(Math.random()-.5)*22,slowT:0,slowF:0,col:T.cols?pick(T.cols):null})}
+function waveClear(){const M=MODES[G.mode],b=M.clear[0]+G.wave*M.clear[1];G.coins+=b;
+  if(G.wave>=M.waves){G.won=true;endGame();return}
+  G.phase='build';G.cd=12;G.nextComp=waveComp(G.wave+1);toast(`웨이브 ${G.wave} 방어 성공! +${b} 코인`)}
+
+/* ---------- combat ---------- */
+function damage(e,dmg,pierce){if(e.dead)return;e.hp-=pierce?dmg:Math.max(1,dmg-e.arm);if(e.hp<=0){e.dead=true;G.kills++;dropCoins(posAt(e.d),e.rw)}}
+function dropCoins(p,v){G.coins+=v;if(G.fx.length<80)G.fx.push({k:'txt',p:V(p.x,p.y),s:'+'+v,t:0,life:.8})}
+const clean=()=>{G.enemies=G.enemies.filter(e=>!e.dead)};
+function update(dt){
+  if(G.phase==='build'){G.cd-=dt;if(G.cd<=0)startWave()}
+  else{G.spawnT-=dt;if(G.queue.length&&G.spawnT<=0){const k=G.queue.shift();spawn(k);G.spawnT=(MON[k].gap||.7)*Math.max(.5,1-G.wave*.006)}
+    if(!G.queue.length&&!G.enemies.length){waveClear();if(G.over)return}}
+  for(const e of G.enemies){e.slowT-=dt;e.d+=e.spd*(e.slowT>0?1-e.slowF:1)*dt;e.wob+=dt*8}
+  for(const e of G.enemies)if(e.d>=PLEN){G.hp-=e.dmg;G.shake=.35;e.dead=true;if(G.hp<=0){G.hp=0;clean();endGame();return}}
+  clean();
+  G.towers.forEach((t,i)=>{if(!t)return;const S=TW[t.type],k=t.lvl-1,o=SLOTS[i];t.cd-=dt;if(t.cd>0)return;
+    const inR=G.enemies.filter(e=>!(t.type==='cannon'&&e.fly)&&dist(posAt(e.d),o)<=S.rng[k]);if(!inR.length)return;
+    const tg=t.type==='sniper'?inR.reduce((a,b)=>b.hp>a.hp?b:a):inR.reduce((a,b)=>b.d>a.d?b:a);
+    t.cd=S.rate[k];const tp=posAt(tg.d);t.ang=Math.atan2(tp.y-o.y,tp.x-o.x);
+    if(t.type==='bolt'){const hs=[tg];let last=tg;
+      while(hs.length<S.chain[k]){let nb=null,bd=95;for(const e of G.enemies){if(hs.includes(e))continue;const d=dist(posAt(e.d),posAt(last.d));if(d<bd){bd=d;nb=e}}if(!nb)break;hs.push(nb);last=nb}
+      G.fx.push({k:'bolt',pts:[V(o.x,o.y-34),...hs.map(e=>posAt(e.d))],t:0,life:.2});hs.forEach(e=>damage(e,S.dmg[k]));clean()}
+    else if(t.type==='sniper'){G.fx.push({k:'tracer',a:V(o.x,o.y-44),b:tp,t:0,life:.18});damage(tg,S.dmg[k],true);clean()}
+    else G.proj.push({p:V(o.x,o.y-24),tgt:tg,last:tp,spd:{archer:520,cannon:300,frost:380}[t.type],dmg:S.dmg[k],splash:S.splash?S.splash[k]:0,slow:S.slow?S.slow[k]:0,type:t.type})});
+  for(const pr of G.proj){const tp=pr.tgt.dead?pr.last:posAt(pr.tgt.d);pr.last=tp;const d=sub(tp,pr.p),l=Math.hypot(d.x,d.y),step=pr.spd*dt;
+    pr.dir=unit(d);if(l<=step){pr.hit=true;hit(pr,tp)}else pr.p=add(pr.p,mul(pr.dir,step))}
+  G.proj=G.proj.filter(p=>!p.hit);
+  updateHero(dt,!!modal);
+  for(const f of G.fx)f.t+=dt;G.fx=G.fx.filter(f=>f.t<f.life);
+  G.banner=Math.max(0,G.banner-dt);G.shake=Math.max(0,G.shake-dt)}
+function hit(pr,at){
+  if(pr.type==='cannon'){G.fx.push({k:'boom',p:at,t:0,life:.35,r:pr.splash});for(const e of G.enemies)if(!e.fly&&dist(posAt(e.d),at)<=pr.splash)damage(e,pr.dmg)}
+  else if(pr.type==='frost'){G.fx.push({k:'ice',p:at,t:0,life:.4,r:pr.splash});for(const e of G.enemies)if(dist(posAt(e.d),at)<=pr.splash){damage(e,pr.dmg);e.slowF=e.slowT>0?Math.max(e.slowF,pr.slow):pr.slow;e.slowT=1.6}}
+  else damage(pr.tgt,pr.dmg);
+  clean()}
+
+/* ---------- hero ---------- */
+function updateHero(dt,paused){const h=G.hero;let mv=V(0,0);
+  const kx=(keys.has('r')?1:0)-(keys.has('l')?1:0),ky=(keys.has('d')?1:0)-(keys.has('u')?1:0);
+  if(!paused&&(kx||ky)){mv=V(kx,ky);h.target=null}
+  else if(h.target){const d=sub(h.target,h.p);if(Math.hypot(d.x,d.y)<3)h.target=null;else mv=d}
+  if(mv.x||mv.y){const u=unit(mv);let step=h.spd*dt;if(h.target)step=Math.min(step,dist(h.target,h.p));
+    h.p=V(clamp(h.p.x+u.x*step,14,W-14),clamp(h.p.y+u.y*step,24,H-12));h.face=u;h.walk+=dt*12}
+  const k=h.lvl-1;h.cd-=dt;h.swing=Math.max(0,h.swing-dt);
+  if(h.cd<=0){let best=null,bd=HERO.rng[k];for(const e of G.enemies){const d=dist(posAt(e.d),h.p);if(d<bd){bd=d;best=e}}
+    if(best){const p=posAt(best.d);h.face=unit(sub(p,h.p));damage(best,HERO.dmg[k]);h.cd=HERO.rate[k];h.swing=.18;G.fx.push({k:'slash',p,t:0,life:.2});clean()}}
+  for(const c of G.drops){c.t+=dt;const d=dist(c.p,h.p);
+    if(d<80)c.p=add(c.p,mul(unit(sub(h.p,c.p)),Math.min(d,(420-d*3)*dt)));
+    if(d<16){c.got=true;G.coins+=c.v;G.fx.push({k:'txt',p:V(h.p.x,h.p.y-10),s:'+'+c.v,t:0,life:.7})}}
+  G.drops=G.drops.filter(c=>!c.got&&c.t<30);
+  if(paused)return;
+  let on=null;PADS.forEach((s,i)=>{if(dist(s,h.p)<24)on=i});
+  if(on!==h.pad){h.pad=on;h.padT=0}
+  if(h.lock!==null&&h.lock!==on)h.lock=null;
+  if(on!==null&&h.lock!==on&&!G.over){h.padT+=dt;if(h.padT>=.5){h.lock=on;h.padT=0;h.target=null;keys.clear();on===HP_ID?openHero():openSlot(on)}}}
+
+/* ---------- drawing ---------- */
+function shadow(x,y,rx,ry){ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,7);ctx.fill()}
+function txt(s,x,y,size,fill,stroke){ctx.font=`${size}px "Do Hyeon",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=Math.max(3,size/6);ctx.strokeStyle=stroke;ctx.fillStyle=fill;ctx.strokeText(s,x,y);ctx.fillText(s,x,y)}
+function drawCastle(){const {x,y}=CASTLE;shadow(x+4,y+40,58,16);
+  ctx.fillStyle='#b4ae9f';ctx.fillRect(x-46,y-22,92,60);for(let i=0;i<5;i++)ctx.fillRect(x-46+i*20,y-32,12,12);
+  ctx.fillStyle='#9a9485';ctx.fillRect(x-46,y+24,92,14);
+  ctx.fillStyle='#3e6bd0';ctx.beginPath();ctx.moveTo(x-30,y-22);ctx.lineTo(x,y-62);ctx.lineTo(x+30,y-22);ctx.fill();
+  ctx.fillStyle='#2f55aa';ctx.beginPath();ctx.moveTo(x,y-62);ctx.lineTo(x+30,y-22);ctx.lineTo(x+10,y-22);ctx.fill();
+  ctx.strokeStyle='#5b4632';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y-62);ctx.lineTo(x,y-84);ctx.stroke();
+  ctx.fillStyle='#f4c542';ctx.beginPath();ctx.moveTo(x,y-84);ctx.lineTo(x+18,y-78);ctx.lineTo(x,y-72);ctx.fill();
+  ctx.fillStyle='#4a3626';ctx.beginPath();ctx.roundRect(x-11,y+8,22,30,[11,11,0,0]);ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(x-40,y-102,80,8);ctx.fillStyle='#e2513f';ctx.fillRect(x-40,y-102,80*G.hp/G.maxHp,8)}
+function drawHeroPad(){const {x,y}=HERO_PAD;ctx.fillStyle='rgba(244,197,66,.22)';ctx.beginPath();ctx.arc(x,y,27,0,7);ctx.fill();
+  ctx.setLineDash([6,5]);ctx.strokeStyle='#f4c542';ctx.lineWidth=2.5;ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x-9,y+9);ctx.lineTo(x+9,y-9);ctx.moveTo(x+9,y+9);ctx.lineTo(x-9,y-9);ctx.stroke();
+  txt('영웅 훈련소',x,y+40,15,'#fff','rgba(40,30,0,.6)')}
+function drawSlot(i){const s=SLOTS[i],t=G.towers[i];
+  if(!t){ctx.fillStyle='rgba(20,60,20,.28)';ctx.beginPath();ctx.roundRect(s.x-26,s.y-26,52,52,8);ctx.fill();
+    ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+    txt('+',s.x,s.y-1,26,'#fff','rgba(0,0,0,0)');return}
+  const k=t.lvl,x=s.x,y=s.y;shadow(x+3,y+20,24,8);
+  const tall=t.type==='sniper'?14:0;
+  ctx.fillStyle='#8f8b80';ctx.beginPath();ctx.roundRect(x-20,y-12-tall,40,32+tall,4);ctx.fill();
+  ctx.fillStyle='#b7b3a6';ctx.beginPath();ctx.roundRect(x-22,y-18-tall,44,12,3);ctx.fill();
+  const top=y-18-tall;
+  if(t.type==='archer'){ctx.fillStyle=['#5b88e0','#4a78d8','#3a63c4','#2f55b3','#22449a'][k-1];ctx.beginPath();ctx.moveTo(x-20,top);ctx.lineTo(x,top-26-k*2);ctx.lineTo(x+20,top);ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.moveTo(x,top-26-k*2);ctx.lineTo(x+20,top);ctx.lineTo(x+6,top);ctx.fill()}
+  else if(t.type==='cannon'){const a=t.ang??-Math.PI/2;ctx.save();ctx.translate(x,top-6);ctx.rotate(a);ctx.fillStyle='#2e2a26';ctx.fillRect(0,-5-k*.6,22+k*2,10+k*1.2);ctx.restore();
+    ctx.fillStyle='#4a3f36';ctx.beginPath();ctx.arc(x,top-6,11+k,0,7);ctx.fill();ctx.fillStyle='#6a5b4c';ctx.beginPath();ctx.arc(x-3,top-9,4.5,0,7);ctx.fill()}
+  else if(t.type==='frost'){const h=22+k*2;ctx.fillStyle='#bfefff';ctx.beginPath();ctx.moveTo(x,top-h);ctx.lineTo(x+11,top-h*.45);ctx.lineTo(x,top);ctx.lineTo(x-11,top-h*.45);ctx.fill();
+    ctx.fillStyle='#7fd3f5';ctx.beginPath();ctx.moveTo(x,top-h);ctx.lineTo(x+11,top-h*.45);ctx.lineTo(x,top);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.8)';ctx.fillRect(x-4,top-h*.7,2.5,7)}
+  else if(t.type==='bolt'){ctx.strokeStyle='#6b5a49';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top-16);ctx.stroke();
+    const r=8+k;ctx.fillStyle='rgba(176,124,255,.35)';ctx.beginPath();ctx.arc(x,top-16-r,r+5,0,7);ctx.fill();
+    ctx.fillStyle='#b07cff';ctx.beginPath();ctx.arc(x,top-16-r,r,0,7);ctx.fill();ctx.fillStyle='#e9dcff';ctx.beginPath();ctx.arc(x-3,top-19-r,3,0,7);ctx.fill()}
+  else{const a=t.ang??-Math.PI/2;ctx.fillStyle='#4f8a3f';ctx.beginPath();ctx.moveTo(x-16,top);ctx.lineTo(x,top-14);ctx.lineTo(x+16,top);ctx.fill();
+    ctx.save();ctx.translate(x,top-4);ctx.rotate(a);ctx.fillStyle='#3a3530';ctx.fillRect(0,-2.5,30+k*2,5);ctx.fillStyle='#e2513f';ctx.fillRect(22+k*2,-3.5,4,7);ctx.restore()}
+  ctx.fillStyle='#f4c542';ctx.strokeStyle='#7a5a08';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x+17,y+13,8,0,7);ctx.fill();ctx.stroke();txt(String(k),x+17,y+13.5,13,'#3a2a00','rgba(0,0,0,0)')}
+
+/* cute monsters */
+function eyes(x,y,s,fx,gap){for(const sx of[-1,1]){const ex=x+sx*gap+fx*s*.3;
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(ex,y,s*.95,s*1.1,0,0,7);ctx.fill();
+  ctx.fillStyle='#2b2233';ctx.beginPath();ctx.arc(ex+fx*s*.3,y+s*.15,s*.62,0,7);ctx.fill();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(ex+fx*s*.3-s*.22,y-s*.18,s*.24,0,7);ctx.fill()}}
+function blush(x,y,gap,s=1){ctx.fillStyle='rgba(255,110,150,.45)';for(const sx of[-1,1]){ctx.beginPath();ctx.ellipse(x+sx*gap,y,2.8*s,1.7*s,0,0,7);ctx.fill()}}
+function smile(x,y,w){ctx.strokeStyle='#5a3a44';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(x,y-w*.4,w,.25*Math.PI,.75*Math.PI);ctx.stroke()}
+function drawMon(e){const p=posAt(e.d),n=unit(sub(posAt(e.d+2),p)),x=p.x-n.y*e.off,y=p.y+n.x*e.off,t=e.wob,fx=clamp(n.x,-1,1);let top=y-22;
+  if(e.kind==='slime'||e.kind==='king'){const king=e.kind==='king',r=king?17:9.5,sq=Math.sin(t)*.1,w=r*(1+sq),h=r*(1-sq);
+    shadow(x,y+2,w*1.05,r*.33);ctx.fillStyle=e.col;ctx.beginPath();ctx.moveTo(x-w,y);ctx.bezierCurveTo(x-w,y-h*2.2,x+w,y-h*2.2,x+w,y);ctx.quadraticCurveTo(x,y+h*.3,x-w,y);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.5)';ctx.beginPath();ctx.ellipse(x-w*.45,y-h*1.15,w*.2,h*.3,-.5,0,7);ctx.fill();
+    eyes(x,y-h*.8,r*.2,fx,r*.36);blush(x,y-h*.38,r*.62,r/9.5);smile(x+fx*1.5,y-h*.4,r*.13);top=y-h*1.75;
+    if(king){ctx.fillStyle='#f4c542';ctx.strokeStyle='#b98a12';ctx.lineWidth=1.5;const cy=y-h*1.6;ctx.beginPath();
+      ctx.moveTo(x-10,cy);ctx.lineTo(x-11,cy-11);ctx.lineTo(x-5,cy-5);ctx.lineTo(x,cy-13);ctx.lineTo(x+5,cy-5);ctx.lineTo(x+11,cy-11);ctx.lineTo(x+10,cy);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle='#ff6f91';ctx.beginPath();ctx.arc(x,cy-4,2,0,7);ctx.fill();top=cy-14}}
+  else if(e.kind==='bunny'){const hop=Math.abs(Math.sin(t*1.3))*6,by=y-hop;shadow(x,y+2,8-hop*.4,3);
+    for(const sx of[-1,1]){ctx.fillStyle='#fffaf6';ctx.beginPath();ctx.ellipse(x+sx*3.6,by-17,2.8,7.5,sx*.15,0,7);ctx.fill();ctx.fillStyle='#ffc2d4';ctx.beginPath();ctx.ellipse(x+sx*3.6,by-16.5,1.3,5,sx*.15,0,7);ctx.fill()}
+    ctx.fillStyle='#fffaf6';ctx.strokeStyle='#f0d4dc';ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(x,by-6,8.5,7.8,0,0,7);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.arc(x-fx*8,by-3,3,0,7);ctx.fill();
+    eyes(x,by-7.5,1.9,fx,3.2);ctx.fillStyle='#ff8fae';ctx.beginPath();ctx.arc(x+fx*1.5,by-4.5,1.2,0,7);ctx.fill();blush(x,by-4,5.2,.8);top=by-27}
+  else if(e.kind==='turtle'){const step=Math.sin(t*1.5)*1.5;shadow(x,y+2,13,4);ctx.fillStyle='#9ad48a';
+    for(const [dx,dy] of[[-7,1],[7,1],[-5,-1],[5,-1]]){ctx.beginPath();ctx.arc(x+dx,y+dy+(dx>0?step:-step)*.5,2.8,0,7);ctx.fill()}
+    const hx=x+fx*12,hy=y-5+Math.abs(step)*.4;ctx.beginPath();ctx.arc(hx,hy,5,0,7);ctx.fill();
+    ctx.fillStyle='#2b2233';ctx.beginPath();ctx.arc(hx+fx*1.5-1.6,hy-1,1.1,0,7);ctx.arc(hx+fx*1.5+1.6,hy-1,1.1,0,7);ctx.fill();
+    ctx.fillStyle='rgba(255,110,150,.45)';ctx.beginPath();ctx.ellipse(hx+fx*1.5,hy+1.6,1.6,1,0,0,7);ctx.fill();
+    ctx.fillStyle='#4f9e5a';ctx.beginPath();ctx.ellipse(x,y-6,12,9.5,0,Math.PI,0);ctx.lineTo(x+12,y-4);ctx.lineTo(x-12,y-4);ctx.fill();
+    ctx.fillStyle='#6fc27a';ctx.beginPath();ctx.ellipse(x,y-9,6,4,0,0,7);ctx.fill();
+    ctx.fillStyle='#86d48f';ctx.beginPath();ctx.ellipse(x-7.5,y-6.5,3,2.5,0,0,7);ctx.ellipse(x+7.5,y-6.5,3,2.5,0,0,7);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.ellipse(x-4,y-13,3,1.6,-.3,0,7);ctx.fill();
+    ctx.fillStyle='#3d8048';ctx.fillRect(x-12,y-5,24,2.2);top=y-20}
+  else if(e.kind==='chick'){const fl=Math.sin(t*3.5)*2.5,bob=Math.abs(Math.sin(t*2))*1.5,cy=y-6-bob;shadow(x,y+1.5,6,2.4);
+    ctx.fillStyle='#f5bf2c';ctx.beginPath();ctx.ellipse(x-6.5,cy+1,2.6,3.6-fl*.3,-.6,0,7);ctx.ellipse(x+6.5,cy+1,2.6,3.6+fl*.3,.6,0,7);ctx.fill();
+    ctx.fillStyle='#ffdc55';ctx.beginPath();ctx.arc(x,cy,6.8,0,7);ctx.fill();
+    ctx.strokeStyle='#f5bf2c';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x,cy-6.5);ctx.quadraticCurveTo(x+1,cy-10,x+3,cy-9);ctx.stroke();
+    ctx.fillStyle='#ff9a3c';ctx.beginPath();ctx.moveTo(x+fx*5.5,cy-1.5);ctx.lineTo(x+fx*9.5+(fx?0:2),cy);ctx.lineTo(x+fx*5.5,cy+1.5);ctx.fill();
+    eyes(x,cy-2,1.45,fx,2.7);blush(x,cy+1.6,4.3,.7);top=cy-14}
+  else if(e.kind==='ghost'){const fl=Math.sin(t*.9)*3,gy=y-16+fl;ctx.fillStyle='rgba(0,0,0,.1)';ctx.beginPath();ctx.ellipse(x,y+2,8,2.5,0,0,7);ctx.fill();
+    ctx.globalAlpha=.9;ctx.fillStyle='#e0d4ff';ctx.beginPath();ctx.arc(x,gy,9.5,Math.PI,0);ctx.lineTo(x+9.5,gy+10);
+    for(let j=0;j<4;j++){const bx=x+9.5-(j+1)*4.75,wav=Math.sin(t*3+j)*1.2;ctx.quadraticCurveTo(bx+2.4,gy+14+wav,bx,gy+10)}
+    ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+    ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.ellipse(x-4.5,gy-5,2.2,3,-.4,0,7);ctx.fill();
+    eyes(x,gy-1,1.9,fx,3.4);ctx.fillStyle='#5a3a44';ctx.beginPath();ctx.ellipse(x+fx*1.2,gy+4,1.4,1.8,0,0,7);ctx.fill();blush(x,gy+2.6,6,.8);top=gy-14}
+  if(e.slowT>0){ctx.strokeStyle='rgba(140,215,255,.95)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y+2,11,4,0,0,7);ctx.stroke();
+    ctx.fillStyle='#bfefff';ctx.beginPath();ctx.arc(x+9,top+4,2.2,0,7);ctx.fill()}
+  if(e.hp<e.max){const w=e.kind==='king'?36:22;ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(x-w/2,top,w,4);ctx.fillStyle='#7be26a';ctx.fillRect(x-w/2,top,w*e.hp/e.max,4)}}
+function drawHero(){const h=G.hero,x=h.p.x,b=Math.abs(Math.sin(h.walk))*2,y=h.p.y-b;
+  shadow(x+2,h.p.y+11,12,5);
+  ctx.fillStyle='#e07a2e';ctx.beginPath();ctx.ellipse(x-h.face.x*5,y+3-h.face.y*3,12,9,0,0,7);ctx.fill();
+  ctx.fillStyle='#1f8f86';ctx.beginPath();ctx.arc(x,y,10.5,0,7);ctx.fill();ctx.fillStyle='#166b64';ctx.fillRect(x-10,y+1,20,3);
+  ctx.fillStyle='#f1d3ad';ctx.beginPath();ctx.arc(x,y-14,7.5,0,7);ctx.fill();
+  ctx.fillStyle='#27443a';ctx.beginPath();ctx.ellipse(x+h.face.x*1.5,y-19,9,4.5,-.15,0,7);ctx.fill();
+  ctx.fillStyle='#e94f3c';ctx.beginPath();ctx.arc(x+5,y-22,2.5,0,7);ctx.fill();
+  const base=Math.atan2(h.face.y,h.face.x),a=base+(h.swing>0?(h.swing/.18-.5)*2.4:.7);
+  ctx.strokeStyle='#5b4632';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*7,y-3+Math.sin(a)*7);ctx.lineTo(x+Math.cos(a)*12,y-3+Math.sin(a)*12);ctx.stroke();
+  ctx.strokeStyle='#eef3f8';ctx.lineWidth=3.2;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*12,y-3+Math.sin(a)*12);ctx.lineTo(x+Math.cos(a)*30,y-3+Math.sin(a)*30);ctx.stroke();
+  if(h.swing>0){ctx.strokeStyle=`rgba(255,255,255,${h.swing/.18*.7})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y-3,32,base-1.2,base+1.2);ctx.stroke()}
+  txt('Lv.'+h.lvl,x,y-34,13,'#ffe58a','rgba(0,0,0,.5)')}
+function render(){
+  ctx.save();if(G&&G.shake>0)ctx.translate((Math.random()-.5)*8*G.shake,(Math.random()-.5)*8*G.shake);
+  ctx.drawImage(bg,0,0);if(!G){ctx.restore();return}
+  if(modal&&modal.slot!=null&&modal.preview){const s=SLOTS[modal.slot];ctx.fillStyle='rgba(255,255,255,.13)';ctx.strokeStyle='rgba(255,255,255,.8)';ctx.setLineDash([6,6]);ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(s.x,s.y,modal.preview,0,7);ctx.fill();ctx.stroke();ctx.setLineDash([])}
+  drawCastle();drawHeroPad();const h=G.hero;
+  if(h.target){ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(h.target.x,h.target.y,9,5,0,0,7);ctx.stroke()}
+  if(h.pad!==null&&h.padT>0){const s=PADS[h.pad];ctx.strokeStyle='#f4c542';ctx.lineWidth=5;ctx.beginPath();ctx.arc(s.x,s.y,32,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,h.padT/.5));ctx.stroke()}
+  for(const c of G.drops){const a=c.t>25?Math.max(0,(30-c.t)/5):1,b=Math.sin(c.t*5+c.ph)*1.5;ctx.globalAlpha=a;
+    ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(c.p.x+1,c.p.y+5,5,2,0,0,7);ctx.fill();
+    ctx.fillStyle='#f4c542';ctx.strokeStyle='#a87a0c';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(c.p.x,c.p.y-b,5.5,5.5,0,0,7);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fff3b0';ctx.fillRect(c.p.x-2,c.p.y-b-3,1.6,3);ctx.globalAlpha=1}
+  [...SLOTS.map((s,i)=>({y:s.y,f:()=>drawSlot(i)})),...G.enemies.map(e=>({y:posAt(e.d).y,f:()=>drawMon(e)})),{y:h.p.y,f:drawHero}].sort((a,b)=>a.y-b.y).forEach(it=>it.f());
+  for(const pr of G.proj){if(pr.type==='archer'){const d=pr.dir||V(1,0);ctx.strokeStyle='#4b3a26';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(pr.p.x-d.x*12,pr.p.y-d.y*12);ctx.lineTo(pr.p.x,pr.p.y);ctx.stroke()}
+    else if(pr.type==='frost'){ctx.fillStyle='#bfefff';ctx.strokeStyle='#5fbde6';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(pr.p.x,pr.p.y,4.5,0,7);ctx.fill();ctx.stroke()}
+    else{ctx.fillStyle='#222';ctx.beginPath();ctx.arc(pr.p.x,pr.p.y,5,0,7);ctx.fill()}}
+  for(const f of G.fx){const k=f.t/f.life;
+    if(f.k==='boom'){ctx.strokeStyle=`rgba(255,150,40,${1-k})`;ctx.lineWidth=4;ctx.beginPath();ctx.arc(f.p.x,f.p.y,f.r*(.4+.6*k),0,7);ctx.stroke()}
+    else if(f.k==='ice'){ctx.fillStyle=`rgba(170,230,255,${.45*(1-k)})`;ctx.beginPath();ctx.arc(f.p.x,f.p.y,f.r*(.5+.5*k),0,7);ctx.fill()}
+    else if(f.k==='bolt'){ctx.strokeStyle=`rgba(200,160,255,${1-k})`;ctx.lineWidth=3;ctx.beginPath();f.pts.forEach((p,i)=>{if(!i){ctx.moveTo(p.x,p.y);return}const q=f.pts[i-1],m=lerp(q,p,.5);ctx.lineTo(m.x+(Math.random()-.5)*12,m.y-8+(Math.random()-.5)*12);ctx.lineTo(p.x,p.y-8)});ctx.stroke()}
+    else if(f.k==='tracer'){ctx.strokeStyle=`rgba(255,240,180,${1-k})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(f.a.x,f.a.y);ctx.lineTo(f.b.x,f.b.y-6);ctx.stroke()}
+    else if(f.k==='slash'){ctx.strokeStyle=`rgba(190,230,255,${1-k})`;ctx.lineWidth=2.5;ctx.beginPath();
+      for(let j=0;j<4;j++){const a=j*1.6+.4,r1=4+k*6,r2=10+k*10;ctx.moveTo(f.p.x+Math.cos(a)*r1,f.p.y-4+Math.sin(a)*r1);ctx.lineTo(f.p.x+Math.cos(a)*r2,f.p.y-4+Math.sin(a)*r2)}ctx.stroke()}
+    else{ctx.globalAlpha=1-k;txt(f.s,f.p.x,f.p.y-20-k*24,20,'#ffd646','#3c2800');ctx.globalAlpha=1}}
+  if(G.banner>0){ctx.globalAlpha=Math.min(1,G.banner*2);txt(`WAVE ${G.wave}`,W/2,H/2,64,'#fff','rgba(40,20,10,.8)');ctx.globalAlpha=1}
+  if(modal){ctx.fillStyle='rgba(0,0,0,.12)';ctx.fillRect(0,0,W,H)}
+  ctx.restore()}
+
+/* ---------- HUD ---------- */
+function hud(){const M=MODES[G.mode];$('#hCoins').textContent=G.coins;$('#hHpN').textContent=G.hp;$('#hHp').style.width=(G.hp/G.maxHp*100)+'%';
+  $('#hWave').textContent=`${G.wave} / ${M.waves}`;$('#hAcc').textContent=`${G.correct} / ${G.total}`;$('#hMode').textContent=M.name;
+  if(G.phase==='build'){$('#waveBtn').disabled=false;$('#waveBtn').textContent=`웨이브 ${G.wave+1} 지금 시작`;$('#waveInfo').textContent=`${Math.ceil(G.cd)}초 뒤 · 다음: ${compText(G.nextComp)}`}
+  else{$('#waveBtn').disabled=true;$('#waveBtn').textContent='전투 중';$('#waveInfo').textContent=`남은 몬스터 ${G.enemies.length+G.queue.length}`}
+  const bb=$('#bonusBtn');bb.disabled=G.bonusCd>0;bb.lastChild.textContent=G.bonusCd>0?` 보너스 문제 ${Math.ceil(G.bonusCd)}초`:" 보너스 문제 0~15";
+  const pb=$('#pandBtn');pb.disabled=G.pandCd>0;pb.lastChild.textContent=G.pandCd>0?` 판도라 문제 ${Math.ceil(G.pandCd)}초`:' 판도라 문제';
+  if(modal)$('#mCoins').textContent=G.coins}
+let toastT=0;function toast(s){const t=$('#toast');t.textContent=s;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1800)}
+
+/* ---------- loop ---------- */
+let lastT=performance.now();
+let SPEED=1;try{SPEED=clamp(parseInt(localStorage.getItem('pdef-speed'),10)||1,1,5)}catch(e){}
+function frame(now){const raw=Math.min(.05,(now-lastT)/1000);lastT=now;
+  if(G&&!G.over){
+    /* 보너스·판도라 대기 시간은 배속과 상관없이 실제 시간으로 흘러요 */
+    G.bonusCd=Math.max(0,G.bonusCd-raw);G.pandCd=Math.max(0,G.pandCd-raw);
+    /* 배속: 같은 크기의 시간 조각을 여러 번 계산해서 탄환·충돌이 정확하게 유지돼요. 문제를 푸는 동안은 배속 없이 느리게 */
+    if(modal)update(raw*.25);else for(let i=0;i<SPEED&&!G.over;i++)update(raw);
+    if(!G.over)hud()}
+  if(modal&&modal.q&&!modal.q.done&&modal.q.deadline){const left=(modal.q.deadline-now)/1000,TL=MODES[G.mode].timer;
+    $('#qTimerFill').style.transform=`scaleX(${Math.max(0,left/TL)})`;$('#qTimerTxt').textContent=Math.max(0,Math.ceil(left))+'초';$('#qTimer').classList.toggle('low',left<=3);if(left<=0)submit(true)}
+  render();requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+
+/* ---------- modal ---------- */
+function optHtml(opts){return opts.map((o,j)=>`<button class="opt" data-j="${j}" ${G.coins<o.cost?'disabled':''}><b>${o.label}</b><span class="d">${o.desc}</span>${o.tag?`<span class="tg">${o.tag}</span>`:''}
+  <span class="c"><span class="coin"></span>${o.cost} ${G.coins<o.cost?'<span class="no">코인 부족</span>':''}</span></button>`).join('')}
+function openSlot(i){const t=G.towers[i];modal={slot:i,preview:t?TW[t.type].rng[t.lvl-1]:null};
+  $('#mTitle').textContent=t?`${TW[t.type].name} Lv.${t.lvl}`:'빈 터 · 어떤 탑을 지을까요?';let opts=[];
+  if(!t)opts=TORDER.map(k=>{const S=TW[k];return{label:S.name,desc:S.desc,tag:`강함: ${S.good}${S.bad?` · 약함: ${S.bad}`:''}`,cost:S.cost[0],pl:S.pl,rng:S.rng[0],build:k}});
+  else if(t.lvl<MAXLV){const S=TW[t.type],a=t.lvl-1,b=t.lvl;
+    const extra=S.chain?` · 튕김 ${S.chain[a]}→${S.chain[b]}`:S.slow?` · 감속 ${Math.round(S.slow[a]*100)}%→${Math.round(S.slow[b]*100)}%`:S.splash?` · 폭발 범위 ${S.splash[a]}→${S.splash[b]}`:'';
+    opts=[{label:`Lv.${b+1}로 강화`,desc:`공격력 ${S.dmg[a]}→${S.dmg[b]} · 사거리 ${S.rng[a]}→${S.rng[b]}${extra}`,cost:S.cost[b],pl:Math.min(4,Math.floor(b/2)),rng:S.rng[b]}]}
+  $('#choose').innerHTML=optHtml(opts);
+  $('#chooseNote').textContent=!t?'비용을 먼저 내고 문제를 풀어요. 정답이면 완성, 틀리면 코인만 사라져요. 비싼 탑일수록 문제의 수가 커져요.':t.lvl>=MAXLV?'이미 최고 레벨(Lv.10)이에요.':'강화할수록 문제의 수가 커져요.';
+  $('#choose').onclick=e=>{const b=e.target.closest('.opt');if(!b||b.disabled)return;const o=opts[+b.dataset.j];modal.preview=o.rng;
+    ask({title:t?`${TW[t.type].name} 강화`:`${o.label} 건설`,cost:o.cost,pl:o.pl,onOk:()=>{if(o.build)G.towers[i]={type:o.build,lvl:1,cd:0};else t.lvl++}})};
+  showModal(true)}
+function openHero(){const h=G.hero,k=h.lvl-1;modal={slot:null};$('#mTitle').textContent=`영웅 훈련소 · 영웅 Lv.${h.lvl}`;
+  const opts=h.lvl<MAXLV?[{label:`Lv.${h.lvl+1}로 훈련`,desc:`칼 공격력 ${HERO.dmg[k]}→${HERO.dmg[k+1]} · 공격 속도 상승`,cost:HERO.cost[k],pl:Math.min(4,Math.floor((k+1)/2))}]:[];
+  $('#choose').innerHTML=optHtml(opts);
+  $('#chooseNote').textContent=h.lvl>=MAXLV?'영웅이 이미 최고 레벨이에요.':'영웅은 가까이 있는 몬스터를 칼로 공격해요. 훈련할수록 문제의 수가 커져요.';
+  $('#choose').onclick=e=>{const b=e.target.closest('.opt');if(!b||b.disabled)return;const o=opts[+b.dataset.j];ask({title:'영웅 훈련',cost:o.cost,pl:o.pl,onOk:()=>{h.lvl++}})};
+  showModal(true)}
+function openBonus(){if(G.bonusCd>0)return;G.bonusCd=BONUS_CD;modal={slot:null};
+  ask({title:'보너스 문제',cost:0,kind:'bonus',pl:Math.min(4,1+Math.floor(G.wave/8)),onOk:()=>{const v=R(0,15);G.coins+=v;return `정답! +${v} 코인`}});showModal(false)}
+const pandUp=()=>G.pandUses<2?1:.45;
+function openPandora(){if(G.pandCd>0)return;const built=G.towers.map((t,i)=>t?i:-1).filter(i=>i>=0);
+  if(!built.length){toast('판도라 문제는 탑을 하나 이상 지은 뒤에 풀 수 있어요');return}
+  G.pandCd=PAND_CD;modal={slot:null};
+  ask({title:'판도라 문제',cost:0,kind:'pandora',pl:Math.min(4,1+Math.floor(G.wave/8)),onOk:()=>{
+    const up=Math.random()<pandUp();G.pandUses++;const list=G.towers.map((t,i)=>t?i:-1).filter(i=>i>=0);if(!list.length)return '판도라 상자가 비어 있었어요';
+    const growable=list.filter(j=>G.towers[j].lvl<MAXLV),i=up&&growable.length?pick(growable):pick(list),t=G.towers[i],nm=TW[t.type].name,s=SLOTS[i];
+    if(up){if(t.lvl<MAXLV){t.lvl++;G.fx.push({k:'txt',p:s,s:'▲ 강화!',t:0,life:1.4});return `판도라 상자: ${nm}이(가) Lv.${t.lvl}로 강화됐어요!`}
+      return `판도라 상자: ${nm}은(는) 이미 최고 레벨이라 그대로예요`}
+    if(t.lvl>1){t.lvl--;G.fx.push({k:'txt',p:s,s:'▼ 약화…',t:0,life:1.4});return `판도라 상자: ${nm}이(가) Lv.${t.lvl}로 약해졌어요…`}
+    G.towers[i]=null;G.fx.push({k:'txt',p:s,s:'붕괴!',t:0,life:1.4});return `판도라 상자: Lv.1 ${nm}이(가) 무너졌어요…`}});showModal(false)}
+function showModal(choose){$('#modal').hidden=false;$('#choose').hidden=!choose;$('#chooseNote').hidden=!choose;if(choose)$('#prob').hidden=true;$('#mCoins').textContent=G.coins;
+  if(choose)setTimeout(()=>{const f=$('#choose .opt:not(:disabled)');(f||$('#mClose')).focus({preventScroll:true})},0)}
+/* 문제를 본 뒤 창을 닫으면: 낸 코인은 돌아오지 않고 오답(포기)으로 처리 */
+function closeModal(){if(modal&&modal.q&&!modal.q.done)forfeit(modal.q);modal=null;$('#modal').hidden=true}
+function forfeit(q){q.done=true;G.total++;const pt=G.per[q.P.type]||(G.per[q.P.type]=[0,0]);pt[1]++;
+  if(!q.kind)G.lost+=q.cost;G.wrongs.push({P:q.P,given:'포기'});
+  const b=challengeBreak();toast(`문제를 포기했어요${q.cost?' · '+q.cost+'코인을 잃었어요':''}${b?' · '+b:''}`)}
+/* 도전 모드: 문제를 틀리면 지어 둔 탑 하나가 무작위로 무너져요 */
+function challengeBreak(){if(!G||G.mode!=='challenge')return '';const list=G.towers.map((t,i)=>t?i:-1).filter(i=>i>=0);if(!list.length)return '';
+  const i=pick(list),nm=TW[G.towers[i].type].name+' Lv.'+G.towers[i].lvl;G.towers[i]=null;G.shake=.4;G.fx.push({k:'txt',p:SLOTS[i],s:'파괴!',t:0,life:1.6});return `${nm}이(가) 무너졌어요`}
+function ask(q){let type;const tp=[...topics];do{type=pick(tp)}while(tp.length>1&&type===G.lastType&&Math.random()<.6);G.lastType=type;
+  const lvl=clamp(q.pl+Math.floor(G.wave/10),0,4),P=Object.assign(TYPES[type].gen(lvl),{type});
+  G.coins-=q.cost;q.P=P;q.input='';q.done=false;modal.q=q;const TL=MODES[G.mode].timer;q.deadline=TL?performance.now()+TL*1000:0;$('#qTimer').hidden=!TL;
+  $('#mTitle').textContent=q.title;$('#choose').hidden=true;$('#chooseNote').hidden=true;$('#prob').hidden=false;
+  $('#qType').textContent=TYPES[type].name;$('#qCond').textContent=TYPES[type].cond;
+  $('#stake').textContent=q.kind==='bonus'?'정답이면 0~15코인 · 오답 −5':q.kind==='pandora'?'정답이면 상자 열기: 아무 탑 하나가 1단계 강화될까, 약화될까? · 오답은 변화 없음':`오답이거나 창을 닫으면 ${q.cost}코인 손해`;
+  if(G.mode==='challenge')$('#stake').textContent+=' · 도전 모드: 틀리면 탑 하나가 무너져요';
+  $('#fig').innerHTML=TYPES[type].draw(P,false);$('#fb').hidden=true;$('#ans').textContent='';$('#okKey').textContent='확인';
+  $('#cancelBtn').hidden=!!q.kind;$('#cancelBtn').textContent='풀지 않고 닫기 (낸 코인은 돌려받지 못해요)';
+  $('#mClose').hidden=!!q.kind;$('#mCoins').textContent=G.coins;$('#modal').hidden=false;setTimeout(()=>$('#okKey').focus({preventScroll:true}),0)}
+function press(k){const q=modal&&modal.q;if(!q)return;
+  if(q.done){if(k==='ok')closeModal();return}
+  if(k==='ok'){if(q.input)submit();return}
+  q.input=k==='del'?q.input.slice(0,-1):(q.input.length<4?(q.input+k).replace(/^0+(?=\d)/,''):q.input);$('#ans').textContent=q.input}
+function submit(timeout){const q=modal.q,P=q.P,val=timeout?null:parseInt(q.input,10);q.done=true;G.total++;$('#qTimer').hidden=true;
+  const pt=G.per[P.type]||(G.per[P.type]=[0,0]);pt[1]++;$('#cancelBtn').hidden=true;$('#mClose').hidden=false;
+  const fb=$('#fb');fb.hidden=false;
+  if(val===P.ans){G.correct++;pt[0]++;const msg=q.onOk();fb.className='fb ok';$('#fbHead').textContent=msg||('정답! '+q.title+' 완료');$('#fbLines').innerHTML='';
+    $('#okKey').textContent='닫기';setTimeout(()=>{if(modal&&modal.q===q)closeModal()},q.kind?1300:700)}
+  else{if(q.kind==='bonus'){const l=Math.min(5,G.coins);G.coins-=l;G.lost+=l}else if(!q.kind)G.lost+=q.cost;
+    G.wrongs.push({P,given:timeout?'시간 초과':val});fb.className='fb bad';const brk=challengeBreak();
+    $('#fbHead').textContent=`${timeout?'시간 초과!':`오답 (입력 ${val})`} · ${q.kind==='bonus'?'−5 코인':q.kind==='pandora'?'상자는 열리지 않았어요':q.cost+'코인을 잃었어요'}${brk?' · '+brk:''}`;
+    $('#fig').innerHTML=TYPES[P.type].draw(P,true);
+    $('#fbLines').innerHTML=P.ex.map(l=>`<div class="ln">${l}</div>`).join('')+`<div class="fin">x = ${P.ans}</div>`;
+    $('#okKey').textContent='닫기'}
+  $('#mCoins').textContent=G.coins}
+
+/* ---------- end ---------- */
+function endGame(){G.over=true;dropLocal(G.mode);if(modal){modal=null;$('#modal').hidden=true}
+  const M=MODES[G.mode],reached=G.won?M.waves:Math.max(0,G.wave-1),best=getBest(G.mode);
+  if(!best||reached>best.w)try{localStorage.setItem('pdef-best2-'+G.mode,JSON.stringify({w:reached,win:G.won}))}catch(e){}
+  $('#overLbl').textContent=`${M.name} 모드 · ${G.won?'승리':'성이 함락됐어요'}`;
+  $('#overTitle').textContent=G.won?`승리! ${M.waves}웨이브를 모두 막았어요`:reached?`웨이브 ${reached}까지 방어`:'첫 웨이브에서 함락';
+  $('#oKills').textContent=G.kills;$('#oTotal').textContent=G.total;$('#oAcc').textContent=G.total?Math.round(G.correct/G.total*100)+'%':'–';$('#oLost').textContent=G.lost;
+  $('#typeBars').innerHTML=ORDER.filter(k=>G.per[k]).map(k=>{const[c,t]=G.per[k];
+    return `<div class="tb"><span>${TYPES[k].name}</span><span class="track"><i style="width:${c/t*100}%"></i></span><span class="n">${c}/${t}</span></div>`}).join('');
+  const w=G.wrongs.slice(-12).reverse();$('#reviewSec').hidden=!w.length;
+  $('#review').innerHTML=w.map(({P,given})=>`<div class="rv">${TYPES[P.type].draw(P,true)}<div class="who"><b>${TYPES[P.type].name}</b> · 내 답 <s>${given}</s> → 정답 <b>${P.ans}</b></div>${P.ex.map(l=>`<div class="ln">${l}</div>`).join('')}</div>`).join('');
+  $('#overPanel').hidden=false;hud();$('#overPanel').scrollIntoView({behavior:'smooth',block:'start'})}
+
+/* ---------- wiring ---------- */
+function renderStart(){renderSaves();startArm=false;$('#startBtn').textContent='성 지키러 가기 →';$('#overwrite').hidden=true;
+  $('#topics').innerHTML=ORDER.map(k=>`<button class="tchip" data-t="${k}" aria-pressed="${topics.has(k)}">${TYPES[k].name}</button>`).join('');
+  $('#modeSel').innerHTML=Object.entries(MODES).map(([k,M])=>{const b=getBest(k);
+    return `<button class="mcard" role="radio" data-m="${k}" aria-checked="${k===gmode}"><b>${M.name}</b><span>${M.desc}</span><span class="rec">${b?(b.win?'★ 클리어함':`최고: 웨이브 ${b.w} / ${M.waves}`):'기록 없음'}</span></button>`}).join('')}
+$('#topics').addEventListener('click',e=>{const b=e.target.closest('.tchip');if(!b)return;const k=b.dataset.t;
+  if(topics.has(k)){if(topics.size===1){$('#warn').hidden=false;return}topics.delete(k)}else topics.add(k);$('#warn').hidden=true;
+  b.setAttribute('aria-pressed',topics.has(k));try{localStorage.setItem('pdef-topics',JSON.stringify([...topics]))}catch(e){}});
+$('#modeSel').addEventListener('click',e=>{const b=e.target.closest('.mcard');if(!b)return;gmode=b.dataset.m;try{localStorage.setItem('pdef-mode',gmode)}catch(_){}
+  document.querySelectorAll('.mcard').forEach(x=>x.setAttribute('aria-checked',x===b));startArm=false;$('#startBtn').textContent='성 지키러 가기 →';$('#overwrite').hidden=true});
+let startArm=false;
+function begin(){newGame(gmode);lastSave=0;$('#saveInfo').textContent='5초마다 자동 저장돼요';$('#startPanel').hidden=true;$('#overPanel').hidden=true;$('#reviewSec').hidden=true;$('#game').hidden=false;hud();
+  toast('화면을 누르거나 방향키로 영웅을 움직여 빈 터에 서 보세요');$('#game').scrollIntoView({block:'start'})}
+$('#startBtn').addEventListener('click',()=>{if(loadLocal(gmode)&&!startArm){startArm=true;$('#overwrite').hidden=false;$('#overwrite').textContent=`${MODES[gmode].name} 모드에 저장된 게임이 있어요. 한 번 더 누르면 저장을 지우고 새로 시작해요.`;$('#startBtn').textContent='새로 시작하기';return}begin()});$('#againBtn').addEventListener('click',begin);
+$('#homeBtn').addEventListener('click',()=>{$('#overPanel').hidden=true;$('#reviewSec').hidden=true;$('#game').hidden=true;G=null;renderStart();$('#startPanel').hidden=false;window.scrollTo(0,0)});
+$('#waveBtn').addEventListener('click',()=>{if(G&&!G.over&&G.phase==='build')G.cd=0});
+function setSpeed(s){SPEED=clamp(s|0,1,5);try{localStorage.setItem('pdef-speed',SPEED)}catch(e){}
+  document.querySelectorAll('#speed button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.s===SPEED))}
+$('#speed').addEventListener('click',e=>{const b=e.target.closest('button');if(b){setSpeed(+b.dataset.s);if(G&&!G.over)toast(SPEED===1?'보통 속도':`${SPEED}배속`)}});
+document.addEventListener('keydown',e=>{if(!G||G.over||modal||$('#game').hidden||e.target.closest('input,textarea'))return;if(/^[1-5]$/.test(e.key)){setSpeed(+e.key);toast(SPEED===1?'보통 속도':`${SPEED}배속`)}});
+setSpeed(SPEED);
+$('#bonusBtn').addEventListener('click',()=>{if(G&&!G.over&&!modal)openBonus()});
+$('#pandBtn').addEventListener('click',()=>{if(G&&!G.over&&!modal)openPandora()});
+let dragging=false;
+function aim(e){const r=cv.getBoundingClientRect();G.hero.target=V(clamp((e.clientX-r.left)*W/r.width,14,W-14),clamp((e.clientY-r.top)*H/r.height,24,H-12))}
+cv.addEventListener('pointerdown',e=>{if(!G||G.over||modal)return;dragging=true;try{cv.setPointerCapture(e.pointerId)}catch(_){}aim(e);e.preventDefault()});
+cv.addEventListener('pointermove',e=>{if(dragging&&G&&!modal)aim(e)});
+const stopDrag=()=>{dragging=false};cv.addEventListener('pointerup',stopDrag);cv.addEventListener('pointercancel',stopDrag);
+const KEYMAP={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r',w:'u',s:'d',a:'l',d:'r',W:'u',S:'d',A:'l',D:'r',ㅈ:'u',ㄴ:'d',ㅁ:'l',ㅇ:'r'};
+document.addEventListener('keydown',e=>{if(!G||G.over||modal||$('#game').hidden)return;const k=KEYMAP[e.key];if(k){keys.add(k);e.preventDefault()}});
+document.addEventListener('keyup',e=>{const k=KEYMAP[e.key];if(k)keys.delete(k)});
+window.addEventListener('blur',()=>keys.clear());
+$('#mClose').addEventListener('click',closeModal);$('#cancelBtn').addEventListener('click',closeModal);
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal'&&!(modal&&modal.q&&!modal.q.done))closeModal()});
+$('#keys').addEventListener('click',e=>{const b=e.target.closest('.key');if(b)press(b.dataset.k)});
+document.addEventListener('keydown',e=>{if(!modal)return;
+  if(e.key==='Escape'){if(!(modal.q&&!modal.q.done))closeModal();return}
+  if(!modal.q||$('#prob').hidden)return;
+  if(/^\d$/.test(e.key)){press(e.key);e.preventDefault()}else if(e.key==='Backspace'){press('del');e.preventDefault()}else if(e.key==='Enter'){press('ok');e.preventDefault()}});
+
+/* ---------- save / continue ---------- */
+const SAVE_KEY=m=>'pdef-save-'+m, KINDS=Object.keys(MON), r1=v=>Math.round(v*10)/10;
+function snapshot(withWrongs){
+  if(!G||G.over)return null;
+  const refund=0; // 문제를 연 순간 낸 코인은 돌아오지 않아요
+  const s={v:1,mode:G.mode,at:Date.now(),topics:[...topics],coins:G.coins+refund,hp:G.hp,wave:G.wave,phase:G.phase,cd:r1(G.cd),spawnT:r1(G.spawnT),
+    queue:G.queue.map(k=>KINDS.indexOf(k)),next:G.nextComp.map(k=>KINDS.indexOf(k)),
+    towers:G.towers.map(t=>t?[TORDER.indexOf(t.type),t.lvl]:0),
+    en:G.enemies.map(e=>[KINDS.indexOf(e.kind),r1(e.d),Math.ceil(e.hp),e.max,r1(e.spd),e.arm,e.rw,e.dmg,r1(e.off),e.col?MON[e.kind].cols.indexOf(e.col):-1]),
+    hero:[Math.round(G.hero.p.x),Math.round(G.hero.p.y),G.hero.lvl],
+    st:[G.correct,G.total,G.kills,G.lost,G.pandUses,Math.ceil(G.bonusCd),Math.ceil(G.pandCd)],per:G.per};
+  if(withWrongs)s.wrongs=G.wrongs.slice(-12);
+  return s}
+function restore(s){
+  if(!s||s.v!==1||!MODES[s.mode])throw new Error('bad');
+  const t=(s.topics||[]).filter(k=>TYPES[k]);if(t.length)topics=new Set(t);
+  newGame(s.mode);const K=i=>KINDS[i]||'slime';
+  Object.assign(G,{coins:s.coins|0,hp:s.hp|0,wave:s.wave|0,phase:s.phase==='fight'?'fight':'build',cd:Number.isFinite(+s.cd)?+s.cd:12,spawnT:+s.spawnT||0,
+    queue:(s.queue||[]).map(K),nextComp:(s.next||[]).map(K),per:s.per||{},wrongs:s.wrongs||[]});
+  G.towers=SLOTS.map((_,i)=>{const a=(s.towers||[])[i];return a&&TORDER[a[0]]?{type:TORDER[a[0]],lvl:clamp(a[1]|0,1,MAXLV),cd:0}:null});
+  G.enemies=(s.en||[]).map(a=>{const kind=K(a[0]),T=MON[kind];
+    return{kind,d:+a[1],hp:+a[2],max:+a[3],spd:+a[4],arm:+a[5],rw:+a[6],dmg:+a[7],off:+a[8],fly:!!T.fly,col:T.cols?(T.cols[a[9]]||T.cols[0]):null,wob:Math.random()*6,slowT:0,slowF:0}});
+  if(s.hero){G.hero.p=V(clamp(+s.hero[0],14,W-14),clamp(+s.hero[1],24,H-12));G.hero.lvl=clamp(s.hero[2]|0,1,MAXLV);PADS.forEach((p,i)=>{if(dist(p,G.hero.p)<24){G.hero.lock=i;G.hero.pad=i}})}
+  const st=s.st||[];[G.correct,G.total,G.kills,G.lost,G.pandUses,G.bonusCd,G.pandCd]=[0,1,2,3,4,5,6].map(i=>+st[i]||0);
+  if(G.hp<=0)throw new Error('bad')}
+function saveLocal(){const s=snapshot(true);if(!s)return false;try{localStorage.setItem(SAVE_KEY(s.mode),JSON.stringify(s));return true}catch(e){return false}}
+function loadLocal(m){try{return JSON.parse(localStorage.getItem(SAVE_KEY(m))||'null')}catch(e){return null}}
+function dropLocal(m){try{localStorage.removeItem(SAVE_KEY(m))}catch(e){}}
+function toCode(s){const j=JSON.stringify(s);return 'PD1-'+btoa(unescape(encodeURIComponent(j)))}
+function fromCode(c){c=String(c).replace(/\s+/g,'');if(!c.startsWith('PD1-'))throw new Error('bad');return JSON.parse(decodeURIComponent(escape(atob(c.slice(4)))))}
+const fmtAt=t=>{const d=new Date(t);return `${d.getMonth()+1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+
+let lastSave=0;
+function autosave(){if(G&&!G.over&&saveLocal()){lastSave=Date.now();$('#saveInfo').textContent=`자동 저장됨 ${fmtAt(lastSave).split(' ').pop()}`}}
+setInterval(autosave,5000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')autosave()});
+window.addEventListener('pagehide',autosave);
+
+function resumeFrom(s,label){try{restore(s)}catch(e){return false}
+  $('#startPanel').hidden=true;$('#overPanel').hidden=true;$('#reviewSec').hidden=true;$('#savedPanel').hidden=true;$('#game').hidden=false;
+  gmode=G.mode;hud();saveLocal();toast(`${label}: 웨이브 ${G.wave}부터 이어서 해요`);$('#game').scrollIntoView({block:'start'});return true}
+function renderSaves(){const list=Object.keys(MODES).map(m=>[m,loadLocal(m)]).filter(([,s])=>s&&s.v===1);
+  $('#resumeSec').hidden=!list.length;
+  $('#saves').innerHTML=list.map(([m,s])=>`<div class="save"><div class="sinfo"><b>${MODES[m].name}</b><span>웨이브 ${s.wave} / ${MODES[m].waves} · 코인 ${s.coins} · 성 체력 ${s.hp}</span><span class="when">${fmtAt(s.at)} 저장</span></div>
+    <button class="btn" data-resume="${m}">이어하기</button><button class="btn ghost del" data-del="${m}">삭제</button></div>`).join('')}
+$('#saves').addEventListener('click',e=>{const r=e.target.closest('[data-resume]'),d=e.target.closest('[data-del]');
+  if(r){const s=loadLocal(r.dataset.resume);if(!resumeFrom(s,'이어하기')){dropLocal(r.dataset.resume);renderSaves()}}
+  else if(d){if(d.dataset.sure){dropLocal(d.dataset.del);renderSaves();renderStart()}else{d.dataset.sure='1';d.textContent='정말 삭제할까요?'}}});
+$('#codeLoad').addEventListener('click',()=>{const msg=$('#codeMsg');let s;
+  try{s=fromCode($('#codeIn').value)}catch(e){msg.hidden=false;msg.textContent='저장 코드를 읽지 못했어요. PD1- 로 시작하는 코드 전체를 빠짐없이 붙여 넣어 주세요.';return}
+  if(!resumeFrom(s,'저장 코드로 불러오기')){msg.hidden=false;msg.textContent='이 저장 코드로는 게임을 이어 갈 수 없어요. 코드가 잘렸는지 확인해 주세요.';return}
+  msg.hidden=true;$('#codeIn').value=''});
+function showSaved(){const s=snapshot(false);if(!s)return;saveLocal();
+  $('#savedInfo').textContent=`${MODES[s.mode].name} · 웨이브 ${s.wave} / ${MODES[s.mode].waves} · 코인 ${s.coins} · 성 체력 ${s.hp}`;
+  $('#codeOut').value=toCode(s);$('#copyMsg').textContent='';
+  G=null;closeModalSilently();$('#game').hidden=true;$('#savedPanel').hidden=false;window.scrollTo(0,0)}
+function closeModalSilently(){modal=null;$('#modal').hidden=true}
+$('#saveExit').addEventListener('click',()=>{if(G&&!G.over)showSaved()});
+$('#copyBtn').addEventListener('click',()=>{const ta=$('#codeOut'),done=()=>$('#copyMsg').textContent='복사했어요. 메모장이나 학습지에 붙여 넣어 두세요.';
+  const sel=()=>{ta.focus();ta.select();$('#copyMsg').textContent='코드를 선택해 두었어요. Ctrl+C(또는 길게 눌러 복사)로 복사해 주세요.'};
+  try{navigator.clipboard.writeText(ta.value).then(done,sel)}catch(e){sel()}});
+$('#savedHome').addEventListener('click',()=>{$('#savedPanel').hidden=true;renderStart();$('#startPanel').hidden=false});
+
+renderStart();
+
+</script>
+
+</body></html>
