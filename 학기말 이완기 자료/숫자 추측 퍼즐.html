@@ -1,0 +1,519 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>숫자 추측 퍼즐</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* Layout: a graph-paper worksheet; one column, the board is the hero, controls sit right under it */
+:root{
+  --paper:#f5f8fc; --grid:#dde6f1; --ink:#1f2a44; --ink-soft:#5a6782; --card:#ffffff; --line:#cdd8e6;
+  --up:#ef6f6a; --up-bg:#fde6e4; --down:#3fb86a; --down-bg:#ddf5e5; --star:#5b8ff0; --star-bg:#e2ecfd;
+  --accent:#2f4fb5; --accent-ink:#ffffff; --warn:#d0392f; --gold:#f2b632; --shadow:0 2px 0 rgba(31,42,68,.12);
+  --f-display:"Jua","Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#141a28; --grid:#1e2638; --ink:#e8edf7; --ink-soft:#9aa6c0; --card:#1b2334; --line:#2e3a52;
+  --up:#ff8580; --up-bg:#3d2329; --down:#55d084; --down-bg:#1d3a2a; --star:#7aa6ff; --star-bg:#1f2c4a;
+  --accent:#8aa6ff; --accent-ink:#121a2c; --warn:#ff6b61; --gold:#ffc94d; --shadow:0 2px 0 rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#141a28; --grid:#1e2638; --ink:#e8edf7; --ink-soft:#9aa6c0; --card:#1b2334; --line:#2e3a52;
+  --up:#ff8580; --up-bg:#3d2329; --down:#55d084; --down-bg:#1d3a2a; --star:#7aa6ff; --star-bg:#1f2c4a;
+  --accent:#8aa6ff; --accent-ink:#121a2c; --warn:#ff6b61; --gold:#ffc94d; --shadow:0 2px 0 rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance;line-height:1.25}
+h1{font-size:clamp(34px,7vw,48px)}
+h2{font-size:24px}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,.cell:focus-visible,.ans:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em}
+.ico.U{fill:var(--up)} .ico.D{fill:var(--down)} .ico.S{fill:var(--star)}
+
+/* top bar */
+.bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bar .ttl{flex:1;min-width:0}
+.bar .ttl small{display:block;color:var(--ink-soft);font-size:13px;letter-spacing:.04em}
+.bar .ttl b{font-family:var(--f-display);font-weight:400;font-size:22px;word-break:keep-all;display:block;line-height:1.3}
+.bar .ttl{flex:1 1 160px}
+.bar .toggle{margin-left:auto}
+.btn{border:2px solid var(--ink);background:var(--card);border-radius:12px;padding:8px 14px;box-shadow:var(--shadow);font-family:var(--f-display);font-size:17px;display:inline-flex;align-items:center;gap:6px;transition:transform .08s}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:var(--line);box-shadow:none}
+.btn[disabled]{opacity:.45;cursor:default}
+
+/* home */
+.hero{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}
+.hero .lead{color:var(--ink-soft);margin-top:6px}
+.rules{background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:16px 18px;display:grid;gap:8px;box-shadow:var(--shadow)}
+.rules li{list-style:none;display:flex;gap:10px;align-items:flex-start}
+.rules ul{margin:0;padding:0;display:grid;gap:8px}
+.rules .k{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:18px}
+.k.U{background:var(--up-bg)} .k.D{background:var(--down-bg)} .k.S{background:var(--star-bg)}
+.cta{display:flex;gap:10px;flex-wrap:wrap}
+.stages{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.stage{border:2px solid var(--ink);background:var(--card);border-radius:14px;padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;box-shadow:var(--shadow)}
+.stage .no{font-family:var(--f-display);font-size:22px;line-height:1.1}
+.stage .meta{font-size:13px;color:var(--ink-soft)}
+.stage .st{font-size:14px;letter-spacing:2px;color:var(--line)}
+.stage .st i{font-style:normal;color:var(--gold)}
+.stage.locked{opacity:.45;border-style:dashed;box-shadow:none;cursor:not-allowed}
+.stage.next{border-color:var(--accent);outline:3px solid color-mix(in srgb,var(--accent) 25%,transparent)}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.sec-h span{color:var(--ink-soft);font-size:14px}
+.endless{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border:2px dashed var(--line);border-radius:14px;padding:12px}
+.endless p{flex:1 1 200px;color:var(--ink-soft);font-size:14px}
+.linkbtn{border:0;background:none;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;font-size:14px;padding:4px 6px;margin-left:4px}
+.linkbtn:hover{color:var(--warn)}
+.confirm{border:2px solid var(--warn);background:var(--card);border-radius:14px;padding:12px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:var(--shadow)}
+.confirm p{flex:1 1 220px;font-size:15px}
+.btn.danger{background:var(--warn);border-color:var(--warn);color:var(--card)}
+.done-msg{color:var(--down);font-size:15px;font-weight:700}
+
+/* board */
+.boardbox{background:var(--card);border:2px solid var(--ink);border-radius:18px;padding:16px 10px;box-shadow:var(--shadow);overflow-x:auto}
+.board{--tray:clamp(56px,18vw,128px);--cell:clamp(28px,calc((min(100vw,720px) - 76px - var(--tray) - var(--n) * 6px) / var(--n)),66px);
+  display:grid;grid-template-columns:var(--tray) repeat(var(--n),var(--cell));gap:6px;justify-content:center;margin:0 auto;width:max-content}
+.tray{display:flex;flex-wrap:wrap;align-content:center;justify-content:flex-end;gap:1px 2px;padding-right:6px;border-right:2px dashed var(--line);font-size:calc(var(--cell) * .34);min-height:var(--cell)}
+.tray .ico{transition:opacity .2s,transform .2s}
+.tray .ico.used{opacity:.18;transform:scale(.8)}
+.tray.over{animation:shake .35s}
+.tray.over .ico{fill:var(--warn)}
+.tray.full{border-right-color:var(--down)}
+.tray.hlt{background:color-mix(in srgb,var(--gold) 22%,transparent);border-radius:10px;border-right-color:var(--gold)}
+.cell{position:relative;height:var(--cell);border-radius:12px;border:2px solid var(--line);background:var(--paper);display:flex;align-items:center;justify-content:center;gap:2px;
+  font-family:var(--f-display);font-size:calc(var(--cell) * .48);font-variant-numeric:tabular-nums;transition:background .15s,border-color .15s,transform .1s;user-select:none;-webkit-tap-highlight-color:transparent;padding:0}
+.cell .ico{font-size:calc(var(--cell) * .36)}
+.cell.U{background:var(--up-bg);border-color:var(--up)}
+.cell.D{background:var(--down-bg);border-color:var(--down)}
+.cell.S{background:var(--star-bg);border-color:var(--star)}
+.cell.given::after{content:"";position:absolute;inset:3px;border:1.5px dashed currentColor;border-radius:8px;opacity:.35}
+.cell.hl{box-shadow:0 0 0 3px var(--gold);animation:pulse 1.2s infinite}
+.cell.dim{opacity:.55}
+.cell.pop{animation:pop .25s}
+.cell.bad{border-color:var(--warn);animation:shake .35s}
+.corner{display:flex;align-items:flex-end;justify-content:flex-end;padding-right:8px;font-size:12px;color:var(--ink-soft);line-height:1.2;text-align:right}
+.rng{text-align:center;font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums;line-height:1.2;min-height:16px;align-self:end}
+.rng.one{color:var(--accent);font-weight:700}
+.rng.bad{color:var(--warn);font-weight:700}
+.ans{height:var(--cell);border-radius:12px;border:2px solid var(--ink);background:var(--card);font-family:var(--f-display);font-size:calc(var(--cell)*.5);display:grid;place-items:center;padding:0}
+.ans.focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.ans.hl{box-shadow:0 0 0 3px var(--gold)}
+.ans:empty::before{content:"?";color:var(--line)}
+.ans.ok{background:var(--down-bg);border-color:var(--down)}
+.anslabel{display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-family:var(--f-display);font-size:15px;text-align:right;line-height:1.15}
+.sep{grid-column:1/-1;border-top:2px solid var(--ink);margin:4px 0 0}
+
+/* controls */
+.controls{display:flex;flex-direction:column;gap:12px}
+.palette{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tool{width:64px;height:58px;border-radius:14px;border:2px solid var(--line);background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;line-height:1;gap:3px}
+.tool small{font-size:11px;color:var(--ink-soft);font-family:var(--f-body)}
+.tool.on{border-color:var(--ink);box-shadow:var(--shadow);transform:translateY(-2px)}
+.tool.on.U{background:var(--up-bg)} .tool.on.D{background:var(--down-bg)} .tool.on.S{background:var(--star-bg)}
+.tool.erase{font-family:var(--f-display);font-size:20px}
+.numpad{display:grid;grid-template-columns:repeat(5,52px);gap:6px;justify-content:center}
+.numpad button{height:46px;border-radius:12px;border:2px solid var(--line);background:var(--card);font-family:var(--f-display);font-size:22px}
+.numpad button:active{background:var(--star-bg)}
+.actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-soft)}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+
+/* coach (tutorial) */
+.coach{background:var(--card);border:2px solid var(--accent);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.coach .step{font-size:13px;color:var(--accent);letter-spacing:.05em;font-weight:700}
+.coach .txt{font-size:16.5px}
+.coach .txt b{font-family:var(--f-display);font-weight:400}
+.coach .row{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.coach .nudge{color:var(--warn);font-size:14px;min-height:1.4em}
+.dots{display:flex;gap:4px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.tip{font-size:14.5px;color:var(--ink-soft);background:var(--card);border:2px dashed var(--line);border-radius:14px;padding:10px 14px;display:flex;gap:10px;align-items:flex-start}
+.tip b{color:var(--ink);font-family:var(--f-display);font-weight:400;flex:none}
+.msg{text-align:center;min-height:1.5em;font-size:15px;color:var(--ink-soft)}
+.msg.bad{color:var(--warn)}
+
+/* result */
+.overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 45%,transparent);display:grid;place-items:center;padding:20px;z-index:20}
+.result{background:var(--card);border:2px solid var(--ink);border-radius:20px;padding:24px 22px;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;gap:12px;box-shadow:0 6px 0 rgba(31,42,68,.2);animation:pop .3s}
+.result .big{font-family:var(--f-display);font-size:44px;letter-spacing:.08em}
+.result .stars{font-size:38px;letter-spacing:6px;color:var(--line)}
+.result .stars i{font-style:normal;color:var(--gold)}
+.result .actions{margin-top:4px}
+
+@keyframes pulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--gold) 40%,transparent)}}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+@keyframes pop{0%{transform:scale(.85)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:520px){.hero{grid-template-columns:1fr}.hero .mini{display:none}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-U" viewBox="0 0 24 24"><path d="M12 2.5 22 13h-6v8.5H8V13H2z"/></symbol>
+  <symbol id="i-D" viewBox="0 0 24 24"><path d="M12 21.5 2 11h6V2.5h8V11h6z"/></symbol>
+  <symbol id="i-S" viewBox="0 0 24 24"><path d="m12 1.8 3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.9l-6.4 3.5L7 14.3l-5.3-5 7.2-.9z"/></symbol>
+</svg>
+
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------- engine ---------- */
+const KI={U:0,D:1,S:2};
+const sym=(s,n)=>s>n?'U':s<n?'D':'S';
+function solve(grid,trays,limit){
+  const m=grid.length,n=grid[0].length,rem=trays.map(t=>{const c=[0,0,0];for(const k of t)c[KI[k]]++;return c;}),cur=[],sols=[];
+  (function rec(c){
+    if(sols.length>=limit)return;
+    if(c===n){sols.push(cur.slice());return;}
+    for(let s=1;s<=9;s++){
+      let ok=true,r=0;
+      for(;r<m;r++){const k=KI[sym(s,grid[r][c])];if(rem[r][k]===0){ok=false;break;}rem[r][k]--;}
+      if(ok){cur[c]=s;rec(c+1);}
+      for(let q=(ok?m:r)-1;q>=0;q--)rem[q][KI[sym(s,grid[q][c])]]++;
+      if(sols.length>=limit)return;
+    }
+  })(0);
+  return sols;
+}
+function makePuzzle(n,opt){
+  const lo=opt.noExtreme?2:1,hi=opt.noExtreme?8:9,rnd=Math.random;
+  for(let t=0;t<20000;t++){
+    const secret=Array.from({length:n},()=>1+Math.floor(rnd()*9));
+    const grid=Array.from({length:n},()=>Array.from({length:n},()=>lo+Math.floor(rnd()*(hi-lo+1))));
+    const trays=grid.map(row=>row.map((v,c)=>sym(secret[c],v)).sort((a,b)=>KI[a]-KI[b]).join(''));
+    const stars=trays.join('').split('S').length-1;
+    if(opt.maxStars!=null&&stars>opt.maxStars)continue;
+    if(solve(grid,trays,2).length===1)return {grid,trays,secret:secret.join('')};
+  }
+  return null;
+}
+
+/* ---------- data ---------- */
+const EXAMPLE={grid:[[1,8,9],[3,1,6],[8,7,6]],trays:['UUD','UDS','UDS'],secret:'296'};
+const LEVELS=[
+ {name:'첫걸음',from:'학습지 ①',grid:[[3,6,9],[4,9,1],[6,7,2]],trays:['UDS','UUD','DDS'],secret:'562'},
+ {name:'몸풀기',from:'학습지 ②',grid:[[2,9,6],[6,3,3],[1,7,5]],trays:['DDS','UUD','UUD'],secret:'284'},
+ {name:'별 찾기',from:'학습지 ③',grid:[[5,6,1],[1,9,8],[6,8,9]],trays:['UUS','UUD','DDS'],secret:'579'},
+ {name:'네 칸으로',from:'학습지 ④',grid:[[1,8,3,5],[7,9,8,8],[2,3,7,4],[6,3,5,3]],trays:['UUUS','UDDD','UUDS','UUDD'],secret:'2849'},
+ {name:'네 칸 심화',from:'학습지 ⑤',grid:[[2,4,2,7],[8,6,9,5],[3,8,4,4],[9,9,7,8]],trays:['UUUS','UDDS','UDDD','DDDS'],secret:'2638'},
+ {name:'겹치는 숫자',from:'새 문제',grid:[[6,4,8,3],[8,1,9,7],[7,3,1,4],[5,9,5,3]],trays:['UUDD','UDSS','UUSS','UUDD'],secret:'8317'},
+ {name:'1과 9가 없다',from:'새 문제',grid:[[2,8,8,2],[3,7,8,6],[3,5,6,8],[7,5,6,6]],trays:['UDSS','UUDD','UUDD','UUUD'],secret:'2877'},
+ {name:'다섯 칸',from:'새 문제',grid:[[8,6,8,5,8],[1,4,5,5,3],[1,8,3,2,8],[2,5,2,2,7],[7,6,1,8,2]],trays:['UUDDS','UUSSS','UUUDS','UUUUD','UUUUD'],secret:'98553'},
+ {name:'다섯 칸 심화',from:'새 문제',grid:[[7,8,6,8,3],[5,8,6,4,8],[7,6,5,6,8],[8,5,8,2,2],[4,8,4,5,5]],trays:['DDDSS','UDDDS','UUUDD','UUDDD','UUDDS'],secret:'47681'},
+ {name:'마스터',from:'새 문제',grid:[[8,3,2,6,2,2],[6,5,2,3,4,8],[8,3,4,5,6,5],[3,3,6,3,2,7],[3,8,5,2,4,3],[7,7,6,3,5,6]],trays:['UUUDDD','UUUDDS','UDDDDD','UUUDDD','UUUDDD','UDDDDD'],secret:'663414'},
+];
+const TIPS=[
+ ['1과 9부터','1에는 ↓가, 9에는 ↑가 올 수 없어요. 가장 먼저 확정되는 경우가 많아요.'],
+ ['★은 하나의 값','한 세로줄의 ★은 모두 같은 숫자여야 해요. 서로 다른 두 숫자에 ★을 함께 놓을 수 없어요.'],
+ ['같은 숫자, 같은 표시','같은 세로줄에 같은 숫자가 두 번 나오면 표시도 똑같아요.'],
+ ['범위 읽기','↑가 붙은 숫자 중 가장 큰 것보다 크고, ↓가 붙은 숫자 중 가장 작은 것보다 작아야 해요.'],
+ ['남은 표시 세기','가로줄의 표시를 다 쓰고 나면 남는 칸은 자동으로 정해져요. 왼쪽 묶음에서 흐려진 표시를 확인하세요.'],
+ ['모순 찾기','세로줄 아래 범위가 빨간 "모순"이 되면, 그 줄 어딘가의 표시가 틀린 거예요.'],
+];
+const NAMES={U:'↑',D:'↓',S:'★'};
+const icon=(k,cls='')=>`<svg class="ico ${k} ${cls}"><use href="#i-${k}"/></svg>`;
+
+/* ---------- tutorial script ---------- */
+const TUT=[
+ {t:`이 퍼즐은 <b>세로줄마다 숨어 있는 숫자 하나(1~9)</b>를 알아맞히는 퍼즐이에요. 판의 숫자마다 표시가 하나씩 붙어요.<br>${icon('U')} 숨은 숫자가 <b>더 크다</b> &nbsp; ${icon('D')} <b>더 작다</b> &nbsp; ${icon('S')} <b>같다</b>`},
+ {t:`왼쪽 묶음은 그 <b>가로줄에 쓰인 표시들</b>이에요. 순서는 섞여 있어요. 숫자 자리는 그대로 두고, 각 표시가 어느 숫자에 붙는지 찾는 게 목표예요.`,hl:'tray'},
+ {t:`1보다 작은 숫자는 없어요. 그래서 <b>1</b>에는 ${icon('D')}가 올 수 없고, ${icon('U')} 또는 ${icon('S')}만 가능해요.`,hl:[[0,0],[1,1]]},
+ {t:`반대로 9보다 큰 숫자도 없으니 <b>9</b>에는 ${icon('U')}가 올 수 없어요. ${icon('D')} 또는 ${icon('S')}예요.`,hl:[[0,2]]},
+ {t:`첫 번째 가로줄의 묶음은 ${icon('U')}${icon('U')}${icon('D')}, ${icon('S')}이 없어요. 그러니 <b>1은 ${icon('U')}, 9는 ${icon('D')}</b>! 아래에서 표시를 고른 뒤 칸을 눌러 놓아 보세요.`,expect:[[0,0,'U'],[0,2,'D']]},
+ {t:`첫 줄에 남은 표시는 ${icon('U')} 하나뿐. <b>8</b>에 ${icon('U')}를 놓으세요.`,expect:[[0,1,'U']]},
+ {t:`두 번째 세로줄을 보세요. 8에 ${icon('U')}이니 숨은 숫자는 8보다 커요, 즉 <b>9</b>! 그럼 같은 줄의 <b>1과 7</b>도 9보다 작으니 둘 다 ${icon('U')}예요.`,expect:[[1,1,'U'],[2,1,'U']]},
+ {t:`세 번째 세로줄에는 <b>6이 두 번</b> 있어요. 같은 숨은 숫자와 비교하니 결과도 같겠죠? 두 6의 표시는 반드시 같아요.`,hl:[[1,2],[2,2]]},
+ {t:`2·3번째 가로줄에 남은 표시는 각각 ${icon('D')}와 ${icon('S')}. 두 6이 같은 표시라면, 남은 첫 세로줄의 <b>3과 8도 서로 같은 표시</b>여야 해요.`,hl:[[1,0],[2,0]]},
+ {t:`그런데 3과 8이 둘 다 ${icon('S')}일 수는 없어요. 숨은 숫자가 3이면서 8일 순 없으니까요. 그래서 <b>3과 8은 ${icon('D')}, 두 6은 ${icon('S')}</b>!`,expect:[[1,0,'D'],[2,0,'D'],[1,2,'S'],[2,2,'S']]},
+ {t:`이제 숨은 숫자를 읽어요. 첫 줄은 1보다 크고 3보다 작으니 <b>2</b>, 둘째 줄은 <b>9</b>, 셋째 줄은 ★이 붙은 <b>6</b>. 판 아래 물음표 칸을 눌러 <b>2 9 6</b>을 입력하세요.`,answer:true},
+ {t:`완벽해요! 추측한 숫자는 <b>296</b>. 각 세로줄 아래의 작은 범위 표시는 지금 놓인 표시로 가능한 숫자를 알려줘요. 이제 1단계부터 도전해 보세요.`,done:true},
+];
+
+/* ---------- storage ---------- */
+const store={get(){try{return JSON.parse(localStorage.getItem('ngp-progress')||'{}')}catch(e){return {}}},
+  set(v){try{localStorage.setItem('ngp-progress',JSON.stringify(v))}catch(e){}}};
+let progress=store.get(); // {stars:{0:3,...}, tut:true}
+progress.stars=progress.stars||{};
+
+/* ---------- state ---------- */
+let S=null; // game state
+const app=document.getElementById('app');
+let helperOn=true;
+
+function newGame(mode,puz,idx){
+  const n=puz.grid[0].length,m=puz.grid.length;
+  const sol=puz.grid.map(row=>row.map((v,c)=>sym(+puz.secret[c],v)));
+  S={mode,idx,puz,n,m,sol,marks:puz.grid.map(r=>r.map(()=>null)),given:puz.grid.map(r=>r.map(()=>false)),
+     answer:Array(n).fill(null),tool:'U',focus:-1,hints:0,wrong:0,step:0,nudge:'',msg:'',msgBad:false,tip:Math.floor(Math.random()*TIPS.length),done:false};
+  render();
+}
+
+/* ---------- home ---------- */
+function unlocked(i){return i===0||progress.stars[i-1]>0||progress.stars[i]>0}
+function renderHome(opt={}){
+  S=null;
+  const next=LEVELS.findIndex((_,i)=>!progress.stars[i]);
+  const total=Object.values(progress.stars).reduce((a,b)=>a+b,0);
+  app.innerHTML=`
+  <div class="hero">
+    <div>
+      <h1>숫자 추측 퍼즐</h1>
+      <p class="lead">세로줄마다 숨은 숫자가 하나씩 있어요. 숫자 옆의 ${icon('U')}${icon('D')}${icon('S')} 표시를 제자리에 놓아 그 숫자를 알아내세요.</p>
+    </div>
+    <div class="mini" aria-hidden="true">${miniBoard()}</div>
+  </div>
+  <div class="rules">
+    <ul>
+      <li><span class="k U">${icon('U')}</span><span>숨은 숫자가 그 수보다 <b>크면</b> ↑</span></li>
+      <li><span class="k D">${icon('D')}</span><span>숨은 숫자가 그 수보다 <b>작으면</b> ↓</span></li>
+      <li><span class="k S">${icon('S')}</span><span>숨은 숫자와 <b>같으면</b> ★</span></li>
+    </ul>
+    <p style="color:var(--ink-soft);font-size:14.5px">가로줄 왼쪽에는 그 줄에 쓰인 표시들이 순서 없이 주어져요. 숫자는 그대로 두고 표시의 올바른 위치를 찾으세요.</p>
+  </div>
+  <div class="cta">
+    <button class="btn ${progress.tut?'':'primary'}" id="go-tut">${progress.tut?'튜토리얼 다시 보기':'튜토리얼로 시작하기'}</button>
+    ${(progress.tut||Object.keys(progress.stars).length)&&next>=0?`<button class="btn primary" id="go-next">${next+1}단계 이어하기</button>`:''}
+  </div>
+  <div class="sec-h"><h2>단계</h2><span>모은 별 ${total} / ${LEVELS.length*3}<button class="linkbtn" id="rs-ask">기록 초기화</button></span></div>
+  ${opt.ask?`<div class="confirm" role="alertdialog" aria-label="기록 초기화 확인"><p>모든 단계의 별과 튜토리얼 완료 기록이 지워지고, 2단계부터 다시 잠겨요. 되돌릴 수 없어요.</p><button class="btn ghost" id="rs-no">취소</button><button class="btn danger" id="rs-yes">초기화</button></div>`:''}
+  ${opt.done?`<p class="done-msg" role="status">기록을 초기화했어요. 튜토리얼부터 다시 시작해 보세요.</p>`:''}
+  <div class="stages">${LEVELS.map((L,i)=>{const n=L.grid[0].length,st=progress.stars[i]||0,lk=!unlocked(i);
+    return `<button class="stage ${lk?'locked':''} ${i===next&&!lk?'next':''}" data-lv="${i}" ${lk?'aria-disabled="true"':''}>
+      <span class="no">${i+1}단계</span><span class="meta">${n}×${n} · ${L.name}</span>
+      <span class="st">${'<i>★</i>'.repeat(st)}${'★'.repeat(3-st)}</span></button>`}).join('')}</div>
+  <div class="endless">
+    <p><b style="color:var(--ink)">무한 도전</b> · 매번 새로 만들어지는 문제예요. 답이 하나뿐인 문제만 나와요.</p>
+    ${[3,4,5,6].map(n=>`<button class="btn ghost" data-end="${n}">${n}×${n}</button>`).join('')}
+  </div>`;
+  app.querySelector('#go-tut').onclick=()=>newGame('tut',EXAMPLE,-1);
+  const gn=app.querySelector('#go-next'); if(gn)gn.onclick=()=>newGame('level',LEVELS[next],next);
+  app.querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>{const i=+b.dataset.lv;if(unlocked(i))newGame('level',LEVELS[i],i);});
+  app.querySelectorAll('[data-end]').forEach(b=>b.onclick=()=>startEndless(+b.dataset.end));
+  app.querySelector('#rs-ask').onclick=()=>{renderHome({ask:!opt.ask});const y=app.querySelector('#rs-no');if(y)y.focus();};
+  const no=app.querySelector('#rs-no');if(no)no.onclick=()=>renderHome();
+  const yes=app.querySelector('#rs-yes');if(yes)yes.onclick=()=>{
+    progress={stars:{}};
+    try{localStorage.removeItem('ngp-progress')}catch(e){}
+    renderHome({done:true});
+  };
+}
+function miniBoard(){
+  const g=EXAMPLE.grid,sol=g.map(r=>r.map((v,c)=>sym(+EXAMPLE.secret[c],v)));
+  return `<div class="board" style="--n:3;--cell:44px;--tray:58px">${g.map((row,r)=>`<div class="tray">${EXAMPLE.trays[r].split('').map(k=>icon(k)).join('')}</div>`+
+    row.map((v,c)=>`<div class="cell ${sol[r][c]}">${icon(sol[r][c])}${v}</div>`).join('')).join('')}
+    <div class="sep"></div><div class="anslabel">답</div>${[...EXAMPLE.secret].map(d=>`<div class="ans ok">${d}</div>`).join('')}</div>`;
+}
+function startEndless(n){
+  const opt={3:{},4:{maxStars:4},5:{maxStars:5,noExtreme:Math.random()<.5},6:{maxStars:6,noExtreme:true}}[n];
+  const p=makePuzzle(n,opt); if(p)newGame('endless',p,n);
+}
+
+/* ---------- game render ---------- */
+function colRange(c){
+  let lo=1,hi=9,star=null,bad=false;
+  for(let r=0;r<S.m;r++){const k=S.marks[r][c],v=S.puz.grid[r][c];
+    if(k==='U')lo=Math.max(lo,v+1); else if(k==='D')hi=Math.min(hi,v-1);
+    else if(k==='S'){if(star!==null&&star!==v)bad=true;star=v;}}
+  if(star!==null){if(star<lo||star>hi)bad=true;lo=hi=star;}
+  if(lo>hi)bad=true;
+  return {lo,hi,bad};
+}
+function rowUse(r){const c=[0,0,0];for(const k of S.marks[r])if(k)c[KI[k]]++;return c;}
+function trayHTML(r){
+  const use=rowUse(r),cnt=[0,0,0],t=S.puz.trays[r].split(''),need=[0,0,0];t.forEach(k=>need[KI[k]]++);
+  const over=use.some((u,i)=>u>need[i]),full=!over&&use.reduce((a,b)=>a+b)===S.n;
+  return `<div class="tray ${over?'over':''} ${full?'full':''}" title="${t.map(k=>NAMES[k]).join(' ')}">${t.map(k=>{const i=KI[k];cnt[i]++;return icon(k,cnt[i]<=use[i]?'used':'')}).join('')}</div>`;
+}
+function hlSet(){
+  if(S.mode!=='tut')return {cells:new Set(),tray:false,ans:false};
+  const st=TUT[S.step],cells=new Set();
+  if(Array.isArray(st.hl))st.hl.forEach(([r,c])=>cells.add(r+','+c));
+  if(st.expect)st.expect.forEach(([r,c,k])=>{if(S.marks[r][c]!==k)cells.add(r+','+c)});
+  return {cells,tray:st.hl==='tray',ans:!!st.answer};
+}
+function render(){
+  if(!S){renderHome();return;}
+  const {n,m}=S, H=hlSet();
+  const title=S.mode==='tut'?'튜토리얼':S.mode==='level'?`${S.idx+1}단계 · ${LEVELS[S.idx].name}`:`무한 도전 · ${n}×${n}`;
+  const sub=S.mode==='tut'?'학습지 예시문제':S.mode==='level'?`${n}×${n} · ${LEVELS[S.idx].from}`:'새로 만든 문제';
+  let cells='';
+  for(let r=0;r<m;r++){
+    cells+=trayHTML(r).replace('class="tray',`class="tray${H.tray?' hlt':''}`);
+    for(let c=0;c<n;c++){const k=S.marks[r][c],hl=H.cells.has(r+','+c);
+      const dim=S.mode==='tut'&&H.cells.size&&!hl&&!k;
+      cells+=`<button class="cell ${k||''} ${S.given[r][c]?'given':''} ${hl?'hl':''} ${dim?'dim':''}" data-r="${r}" data-c="${c}" aria-label="${r+1}행 ${c+1}열 숫자 ${S.puz.grid[r][c]}${k?' 표시 '+NAMES[k]:''}">${k?icon(k):''}${S.puz.grid[r][c]}</button>`;}
+  }
+  let rng='<div class="corner">'+(helperOn?'가능한 수':'')+'</div>';
+  for(let c=0;c<n;c++){if(!helperOn){rng+='<div class="rng"></div>';continue;}const x=colRange(c);
+    rng+=`<div class="rng ${x.bad?'bad':x.lo===x.hi?'one':''}">${x.bad?'모순':x.lo===x.hi?x.lo:x.lo+'~'+x.hi}</div>`;}
+  let ans='<div class="anslabel">추측한<br>숫자</div>';
+  for(let c=0;c<n;c++)ans+=`<button class="ans ${S.focus===c?'focus':''} ${H.ans&&S.answer[c]!=+S.puz.secret[c]?'hl':''} ${S.done?'ok':''}" data-a="${c}" aria-label="${c+1}번째 세로줄 답">${S.answer[c]??''}</button>`;
+
+  const st=S.mode==='tut'?TUT[S.step]:null;
+  const coach=st?`<div class="coach" role="status">
+      <div class="row"><span class="step">설명 ${S.step+1} / ${TUT.length}</span><span class="dots">${TUT.map((_,i)=>`<i class="${i<=S.step?'on':''}"></i>`).join('')}</span></div>
+      <div class="txt">${st.t}</div>
+      <div class="nudge">${S.nudge}</div>
+      <div class="row">
+        <button class="btn ghost" id="t-prev" ${S.step===0?'disabled':''}>이전</button>
+        ${st.done?`<button class="btn primary" id="t-fin">1단계 시작</button>`:(!st.expect&&!st.answer)?`<button class="btn primary" id="t-next">다음</button>`:`<span style="color:var(--ink-soft);font-size:14px">직접 해 보면 넘어가요</span>`}
+      </div></div>`:'';
+  const tip=S.mode!=='tut'?`<div class="tip"><b>팁 · ${TIPS[S.tip][0]}</b><span>${TIPS[S.tip][1]}</span></div>`:'';
+  const pad=S.focus>=0?`<div class="numpad">${[1,2,3,4,5,6,7,8,9].map(d=>`<button data-d="${d}">${d}</button>`).join('')}<button data-d="x" style="font-size:14px;white-space:nowrap">지우기</button></div>`
+    :`<div class="palette" role="toolbar" aria-label="표시 고르기">${['U','D','S'].map(k=>`<button class="tool ${k} ${S.tool===k?'on':''}" data-t="${k}" aria-pressed="${S.tool===k}">${icon(k)}<small>${k==='U'?'더 크다':k==='D'?'더 작다':'같다'}</small></button>`).join('')}
+      <button class="tool erase ${S.tool==='E'?'on':''}" data-t="E" aria-pressed="${S.tool==='E'}">✕<small>지우기</small></button></div>`;
+  const actions=S.mode==='tut'?'':`<div class="actions">
+      <button class="btn ghost" id="b-hint">힌트 ${S.hints?`(${S.hints})`:''}</button>
+      <button class="btn ghost" id="b-reset">처음부터</button>
+      <button class="btn primary" id="b-submit">정답 제출</button></div>`;
+  app.innerHTML=`
+    <div class="bar"><button class="btn ghost" id="b-home" aria-label="단계 목록으로">← 목록</button>
+      <div class="ttl"><small>${sub}</small><b>${title}</b></div>
+      <label class="toggle"><input type="checkbox" id="helper" ${helperOn?'checked':''}> 범위 도우미</label></div>
+    ${coach}
+    <div class="boardbox"><div class="board" style="--n:${n}">${cells}${rng}<div class="sep"></div>${ans}</div></div>
+    <div class="controls">${pad}<div class="msg ${S.msgBad?'bad':''}">${S.msg}</div>${actions}</div>
+    ${tip}`;
+  bind();
+}
+function bind(){
+  app.querySelector('#b-home').onclick=()=>{renderHome();window.scrollTo(0,0)};
+  app.querySelector('#helper').onchange=e=>{helperOn=e.target.checked;render()};
+  app.querySelectorAll('.cell').forEach(b=>b.onclick=()=>tapCell(+b.dataset.r,+b.dataset.c));
+  app.querySelectorAll('.ans').forEach(b=>b.onclick=()=>{if(S.done)return;S.focus=+b.dataset.a;render()});
+  app.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{S.tool=b.dataset.t;render()});
+  app.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>inputDigit(b.dataset.d));
+  const q=id=>app.querySelector(id);
+  if(q('#t-next'))q('#t-next').onclick=()=>{S.step++;S.nudge='';render()};
+  if(q('#t-prev'))q('#t-prev').onclick=()=>{tutBack();};
+  if(q('#t-fin'))q('#t-fin').onclick=()=>{progress.tut=true;store.set(progress);newGame('level',LEVELS[0],0)};
+  if(q('#b-hint'))q('#b-hint').onclick=hint;
+  if(q('#b-reset'))q('#b-reset').onclick=()=>{const {mode,puz,idx}=S;newGame(mode,puz,idx)};
+  if(q('#b-submit'))q('#b-submit').onclick=submit;
+}
+function flash(sel){const el=app.querySelector(sel);if(el){el.classList.remove('bad');void el.offsetWidth;el.classList.add('bad');}}
+
+/* ---------- actions ---------- */
+function tapCell(r,c){
+  if(S.done)return;
+  if(S.focus>=0){S.focus=-1;render();return;}
+  if(S.given[r][c]){S.msg='힌트로 채운 칸은 바꿀 수 없어요.';S.msgBad=false;render();return;}
+  const cur=S.marks[r][c],t=S.tool;
+  const next=t==='E'?null:(cur===t?null:t);
+  if(S.mode==='tut'){
+    const st=TUT[S.step];
+    const e=st.expect&&st.expect.find(x=>x[0]===r&&x[1]===c);
+    if(!st.expect){S.nudge=st.answer?'이제 판 아래 물음표 칸에 숫자를 입력해요.':'이번 설명은 읽기만 하면 돼요. "다음"을 눌러 주세요.';render();return;}
+    if(!e){S.nudge='반짝이는 칸을 눌러 주세요.';render();return;}
+    if(next!==e[2]){S.nudge=`이 칸에는 ${NAMES[e[2]]} 표시가 와야 해요. 아래에서 ${NAMES[e[2]]}를 고른 뒤 눌러 보세요.`;render();flash(`.cell[data-r="${r}"][data-c="${c}"]`);return;}
+    S.marks[r][c]=next;S.nudge='';
+    if(st.expect.every(([rr,cc,k])=>S.marks[rr][cc]===k)){S.step++;}
+    render();pop(r,c);return;
+  }
+  S.marks[r][c]=next;S.msg='';
+  render();pop(r,c);
+  const use=rowUse(r),need=[0,0,0];S.puz.trays[r].split('').forEach(k=>need[KI[k]]++);
+  if(next&&use[KI[next]]>need[KI[next]]){S.msg=`${r+1}번째 가로줄에는 ${NAMES[next]}가 ${need[KI[next]]}개뿐이에요.`;S.msgBad=true;render();}
+}
+function pop(r,c){const el=app.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);if(el)el.classList.add('pop');}
+function inputDigit(d){
+  if(S.focus<0||S.done)return;
+  S.answer[S.focus]=d==='x'?null:+d;
+  if(d!=='x'){S.focus=S.focus+1<S.n?S.focus+1:-1;}
+  if(S.mode==='tut'&&TUT[S.step].answer){
+    if(S.answer.every((v,i)=>v===+S.puz.secret[i])){S.step++;S.focus=-1;S.done=true;S.nudge='';}
+    else if(S.answer.every(v=>v!=null)){S.nudge='조금 다르네요. 세로줄 아래 범위 표시를 참고해 보세요.';}
+  }
+  render();
+}
+function tutBack(){
+  if(S.step===0)return;
+  S.step--;S.done=false;S.nudge='';
+  // undo what later steps placed
+  const keep=new Set();TUT.slice(0,S.step).forEach(st=>st.expect&&st.expect.forEach(([r,c])=>keep.add(r+','+c)));
+  for(let r=0;r<S.m;r++)for(let c=0;c<S.n;c++)if(!keep.has(r+','+c))S.marks[r][c]=null;
+  if(!TUT[S.step].answer)S.answer=Array(S.n).fill(null);
+  render();
+}
+function hint(){
+  if(S.done)return;
+  const wrong=[],empty=[];
+  for(let r=0;r<S.m;r++)for(let c=0;c<S.n;c++){const k=S.marks[r][c];if(k&&k!==S.sol[r][c])wrong.push([r,c]);else if(!k)empty.push([r,c]);}
+  // fill answer digits once all symbols are right
+  if(!wrong.length&&!empty.length){
+    const c=S.answer.findIndex((v,i)=>v!==+S.puz.secret[i]);
+    if(c>=0){S.answer[c]=+S.puz.secret[c];S.hints++;S.msg=`${c+1}번째 세로줄의 숨은 숫자를 채웠어요.`;S.msgBad=false;render();}
+    return;
+  }
+  const pool=wrong.length?wrong:empty;
+  // prefer cells that are most constrained: 1s, 9s first, otherwise random
+  const [r,c]=pool[Math.floor(Math.random()*pool.length)];
+  S.marks[r][c]=S.sol[r][c];S.given[r][c]=true;S.hints++;
+  S.msg=wrong.length?`${r+1}행 ${c+1}열의 표시가 틀려서 고쳐 놓았어요.`:`${r+1}행 ${c+1}열에 ${NAMES[S.sol[r][c]]}를 놓았어요.`;S.msgBad=false;
+  S.tip=(S.tip+1)%TIPS.length;
+  render();pop(r,c);
+}
+function submit(){
+  if(S.done)return;
+  if(S.answer.some(v=>v==null)){S.msg='판 아래의 물음표 칸을 모두 채워 주세요.';S.msgBad=true;S.focus=S.answer.findIndex(v=>v==null);render();return;}
+  if(S.answer.join('')===S.puz.secret){
+    S.done=true;S.focus=-1;S.marks=S.sol.map(r=>r.slice());
+    const stars=S.hints===0&&S.wrong===0?3:S.hints+S.wrong<=2?2:1;
+    if(S.mode==='level'){progress.stars[S.idx]=Math.max(progress.stars[S.idx]||0,stars);store.set(progress);}
+    S.msg='';render();showResult(stars);
+  }else{
+    S.wrong++;
+    const off=S.answer.map((v,i)=>v!==+S.puz.secret[i]).filter(Boolean).length;
+    S.msg=`아직 아니에요. ${off}개 세로줄의 숫자가 달라요.`;S.msgBad=true;S.tip=(S.tip+1)%TIPS.length;render();
+    app.querySelectorAll('.ans').forEach(a=>{a.classList.add('bad')});
+    setTimeout(()=>app.querySelectorAll('.ans').forEach(a=>a.classList.remove('bad')),400);
+  }
+}
+function showResult(stars){
+  const ov=document.createElement('div');ov.className='overlay';
+  const isLast=S.mode==='level'&&S.idx===LEVELS.length-1;
+  const nextBtn=S.mode==='level'?(isLast?`<button class="btn primary" id="r-end">무한 도전 하러 가기</button>`:`<button class="btn primary" id="r-next">${S.idx+2}단계로</button>`)
+    :`<button class="btn primary" id="r-again">새 문제</button>`;
+  ov.innerHTML=`<div class="result" role="dialog" aria-label="정답">
+    <h2>${isLast?'모든 단계 클리어!':'정답이에요!'}</h2>
+    <div class="big">${S.puz.secret}</div>
+    ${S.mode==='level'?`<div class="stars">${'<i>★</i>'.repeat(stars)}${'★'.repeat(3-stars)}</div>`:''}
+    <p style="color:var(--ink-soft);font-size:14.5px">힌트 ${S.hints}번 · 틀린 제출 ${S.wrong}번${S.mode==='level'&&stars<3?'<br>힌트와 오답 없이 풀면 별 3개!':''}</p>
+    <div class="actions"><button class="btn ghost" id="r-home">목록</button><button class="btn ghost" id="r-look">판 보기</button>${nextBtn}</div></div>`;
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.querySelector('#r-home').onclick=()=>{close();renderHome();window.scrollTo(0,0)};
+  ov.querySelector('#r-look').onclick=close;
+  const rn=ov.querySelector('#r-next');if(rn)rn.onclick=()=>{close();newGame('level',LEVELS[S.idx+1],S.idx+1);window.scrollTo(0,0)};
+  const re=ov.querySelector('#r-end');if(re)re.onclick=()=>{close();startEndless(5)};
+  const ra=ov.querySelector('#r-again');if(ra)ra.onclick=()=>{close();startEndless(S.idx)};
+  ov.querySelector('.btn.primary').focus();
+}
+document.addEventListener('keydown',e=>{
+  if(!S||S.done||document.querySelector('.overlay'))return;
+  if(S.focus>=0){
+    if(/^[1-9]$/.test(e.key)){inputDigit(e.key);e.preventDefault();}
+    else if(e.key==='Backspace'||e.key==='Delete'){inputDigit('x');}
+    else if(e.key==='ArrowLeft'){S.focus=Math.max(0,S.focus-1);render();}
+    else if(e.key==='ArrowRight'){S.focus=Math.min(S.n-1,S.focus+1);render();}
+    else if(e.key==='Escape'){S.focus=-1;render();}
+  }
+});
+
+/* ---------- boot ---------- */
+function start(data){
+  if(data&&data.S){S=data.S;helperOn=data.helperOn!==false;render();}
+  else renderHome();
+}
+window.claude?.hot?.snapshot?.(()=>({S,helperOn}));
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+</script>
+
+</body></html>

@@ -1,0 +1,354 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>성냥개비 퍼즐 30</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 성냥갑 — 위엔 마찰면 띠, 가운데 칠판 보드, 아래 조작 버튼과 30문항 선반 */
+:root{
+  --paper:#e9ecef; --card:#f7f8f9; --ink:#1e2327; --muted:#5d666d; --line:#cdd3d8;
+  --red:#b9301c; --red-ink:#fff; --striker:#6b4a33; --striker2:#3e2a1d;
+  --board:#1f2b27; --board-edge:#141c19; --chalk:#e6ece4; --ghost:rgba(230,236,228,.16);
+  --ok:#2f7d4f; --gold:#f2b544;
+  --display:"Black Han Sans","Noto Sans KR",system-ui,sans-serif;
+  --body:"Noto Sans KR",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#15181a; --card:#1d2124; --ink:#e7eaec; --muted:#9aa3a9; --line:#2f3539;
+  --red:#d2452f; --red-ink:#fff; --striker:#5a3e2b; --striker2:#2c1e15;
+  --board:#18221f; --board-edge:#0d1311; --chalk:#e6ece4; --ghost:rgba(230,236,228,.14);
+  --ok:#48a56d; --gold:#f2b544; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#15181a; --card:#1d2124; --ink:#e7eaec; --muted:#9aa3a9; --line:#2f3539;
+  --red:#d2452f; --red-ink:#fff; --striker:#5a3e2b; --striker2:#2c1e15;
+  --board:#18221f; --board-edge:#0d1311; --chalk:#e6ece4; --ghost:rgba(230,236,228,.14);
+  --ok:#48a56d; --gold:#f2b544; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.striker{height:14px;border-radius:3px;background:
+  radial-gradient(circle at 20% 30%,rgba(0,0,0,.35) 1px,transparent 1.5px) 0 0/6px 6px,
+  radial-gradient(circle at 70% 60%,rgba(255,255,255,.12) 1px,transparent 1.5px) 0 0/5px 7px,
+  linear-gradient(var(--striker),var(--striker2))}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,6vw,42px);line-height:1.05;margin:0;letter-spacing:.01em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--red)}
+.scorebox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+button.small{padding:5px 11px;font-size:13px}
+button.danger{background:var(--red);color:var(--red-ink);border-color:var(--red)}
+.confirm{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--ink);background:var(--card);border:1px solid var(--red);border-radius:8px;padding:8px 10px;width:100%;justify-content:flex-end}
+.confirm[hidden]{display:none}
+.score{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.score b{color:var(--ink);font-size:18px}
+
+.stage{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.qhead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.qno{font-family:var(--display);font-size:20px}
+.qno small{font-family:var(--body);font-size:13px;color:var(--muted);margin-left:8px;font-weight:500}
+.task{font-weight:700;font-size:16px}
+.cat{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--red);border:1px solid var(--red);border-radius:999px;padding:1px 10px;margin-left:10px;vertical-align:2px}
+.hintline{min-height:1.4em;text-align:center;color:#cfe3d6;font-size:14px;margin-top:6px}
+.hintline:not(:empty)::before{content:"힌트 · ";color:var(--gold);font-weight:700}
+.why{min-height:1.4em;text-align:center;color:var(--chalk);opacity:.85;font-size:14px;margin-top:2px}
+.task .n{display:inline-block;background:var(--red);color:var(--red-ink);font-family:var(--display);font-weight:400;padding:0 8px;border-radius:4px;margin:0 2px}
+
+.board{background:radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.05),transparent 70%),var(--board);
+  box-shadow:inset 0 0 0 6px var(--board-edge);padding:28px 18px 22px;position:relative}
+.board svg{display:block;width:100%;height:auto;max-height:300px;margin:0 auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.status{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin-top:16px;color:var(--chalk);font-size:14px}
+.status span{opacity:.85}
+.status b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:16px;color:var(--gold)}
+.msg{min-height:1.6em;text-align:center;color:var(--chalk);margin-top:8px;font-weight:500}
+.msg.ok{color:var(--gold);font-family:var(--display);font-weight:400;font-size:22px}
+.msg.warn{color:#f0a48f}
+
+.stick{cursor:pointer}
+.hit{fill:transparent}
+.stick:focus{outline:none}
+.stick:focus-visible .body{stroke:var(--gold);stroke-width:2}
+.stick:hover .body{filter:brightness(1.15)}
+.ghost{cursor:default}
+.ghost{pointer-events:none}
+.ghost .slot{fill:none;stroke:transparent;stroke-width:1.5}
+.holding .ghost{cursor:pointer;pointer-events:auto}
+.holding .ghost .slot{stroke:rgba(242,181,68,.6);stroke-dasharray:none;animation:pulse 1.2s ease-in-out infinite}
+.holding .ghost:hover .slot{fill:rgba(242,181,68,.18)}
+.ghost .hit{fill:transparent}
+.fixed .body{opacity:.75}
+@keyframes pulse{50%{stroke:rgba(242,181,68,.25)}}
+.pop{animation:pop .22s ease-out}
+@keyframes pop{from{transform:scale(.6);opacity:.3}to{transform:scale(1);opacity:1}}
+.flame{opacity:0}
+.lit .flame{animation:burn .9s ease-out forwards;animation-delay:var(--d,0s);transform-box:fill-box;transform-origin:center}
+@keyframes burn{0%{opacity:0;transform:scale(.3)}30%{opacity:1;transform:scale(1.2)}100%{opacity:.85;transform:scale(1)}}
+
+.tools{display:flex;gap:8px;flex-wrap:wrap;padding:14px 18px;border-top:1px solid var(--line)}
+button{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:7px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:var(--red);color:var(--red-ink);border-color:var(--red)}
+.tools .sp{flex:1}
+
+.howto{color:var(--muted);font-size:14px;max-width:65ch;margin:0}
+.shelf h2{font-family:var(--display);font-weight:400;font-size:18px;margin:0 0 10px}
+.group{display:flex;gap:10px;align-items:baseline;margin-bottom:10px;flex-wrap:wrap}
+.group .lab{width:64px;flex:none;font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.chips{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+.chip{width:40px;height:40px;padding:0;font-family:var(--mono);font-variant-numeric:tabular-nums;display:grid;place-items:center;position:relative}
+.chip.done{background:var(--ok);border-color:var(--ok);color:#fff}
+.chip.peek{background:transparent;border-color:var(--ok);color:var(--ok)}
+.chip.cur{outline:2px solid var(--red);outline-offset:2px}
+.legend{font-size:12px;color:var(--muted);margin-top:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}.lit .flame{opacity:.85}}
+@media (max-width:480px){.board{padding:20px 8px 16px}.tools .sp{display:none}}
+</style>
+
+<div class="wrap">
+  <div class="striker" aria-hidden="true"></div>
+  <header>
+    <h1>성냥개비 <em>퍼즐 30</em></h1>
+    <div class="scorebox">
+      <div class="score">푼 문제 <b id="solvedCount">0</b> / 30</div>
+      <button id="wipe" class="small">초기화하기</button>
+      <div class="confirm" id="wipeBox" hidden>
+        <span>푼 기록을 모두 지우고 1번부터 다시 시작할까요?</span>
+        <button id="wipeYes" class="small danger">모두 지우기</button>
+        <button id="wipeNo" class="small">취소</button>
+      </div>
+    </div>
+  </header>
+  <p class="howto">성냥개비를 눌러 집고, 놓을 자리를 눌러 내려놓으세요. 성냥을 들면 놓을 수 있는 자리가 노랗게 보여요. 정해진 개수만큼 옮긴 뒤 <b>정답 확인</b>을 누르세요. 등호(=)는 움직일 수 없고, 계산만으로는 안 풀리는 문제가 많아요. 막히면 힌트를 한 번 볼 수 있어요.</p>
+
+  <section class="stage" aria-live="polite">
+    <div class="qhead">
+      <div class="qno" id="qno">1번</div>
+      <div class="task">성냥개비 <span class="n" id="kNum">1</span>개를 옮기세요</div>
+    </div>
+    <div class="board">
+      <svg id="eq" role="img" aria-label="성냥개비 식"></svg>
+      <div class="status">
+        <span>옮긴 성냥 <b id="moved">0</b>/<b id="kMax">1</b></span>
+        <span>손에 든 성냥 <b id="held">0</b></span>
+      </div>
+      <div class="hintline" id="hintline"></div>
+      <div class="msg" id="msg"></div>
+      <div class="why" id="why"></div>
+    </div>
+    <div class="tools">
+      <button id="prev">← 이전</button>
+      <button id="undo">되돌리기</button>
+      <button id="reset">처음부터</button>
+      <button id="hint">힌트 보기</button>
+      <span class="sp"></span>
+      <button id="check" class="primary">정답 확인</button>
+      <button id="next">다음 →</button>
+    </div>
+  </section>
+
+  <section class="shelf">
+    <h2>문제 선택</h2>
+    <div id="groups"></div>
+    <div class="legend">초록색은 푼 문제예요. 푼 기록은 자동으로 저장되고, 위의 <b>초기화하기</b>로 모두 지울 수 있어요.</div>
+  </section>
+</div>
+<script>
+// 문제 데이터와 칸 모양(px). 모든 문제는 정답이 하나뿐이고, 정해진 개수보다 적게 옮겨서는 풀리지 않음을 검증함
+const DATA={"P":[{"id":"dfd07013","cells":["K1","E","W"],"start":[["fl1","fm1","fm2","fr1","ib","il","im","ir","v","vtR"],["e1","e2"],["b1","b2","c1","c2","l1","l2","m1","m2","r1","r2","t1","t2"]],"answer":[["fl1","fm1","fm2","ft","ib","il","im","ir","v","vtR"],["e1","e2"],["b1","b2","c1","c2","l1","l2","m1","m2","r1","r2","t1","t2"]],"accept":[[["fl1","fm1","fm2","ft","ib","il","im","ir","v","vtR"]],[["e1","e2"]],[["b1","b2","c1","c2","l1","l2","m1","m2","r1","r2","t1","t2"]]],"k":1,"cat":"한글 ↔ 한자","hint":"오른쪽 한자는 둑으로 반듯하게 나뉜 땅을 본뜬 모양이에요.","ans":"밭 = 田","why":"밭 전(田)."},{"id":"32841d7f","cells":["W","N","N","E","W"],"start":[["c1","c2","t1","t2"],["a","b","c","e","f","g"],["a","b","e","f","g"],["e1","e2"],["b1","b2","c1","c2","m2"]],"answer":[["c1","c2","t1","t2"],["a","b","c","d","e","f"],["a","b","e","f","g"],["e1","e2"],["b1","b2","c1","c2","m2"]],"accept":[[["c1","c2","t1","t2"]],[["a","b","c","d","e","f"]],[["a","b","e","f","g"]],[["e1","e2"]],[["b1","b2","c1","c2","m2"]]],"k":1,"cat":"영어 ↔ 한자","hint":"오른쪽 한자와 뜻이 통하는 영어 단어는 여럿이에요. 그중 세 글자짜리를 떠올려 보세요.","ans":"TOP = 上","why":"TOP은 '꼭대기', 윗 상(上)."},{"id":"356739f2","cells":["K1","E","N","N"],"start":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["e1","e2"],["b","c"],["a","c","d","e","f","g"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["e1","e2"],["b","c"],["a","b","c","d","e","f"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],[["e1","e2"]],[["b","c"]],[["a","b","c","d","e","f"]]],"k":1,"cat":"한글 숫자","hint":"한글로 쓴 숫자도 숫자예요.","ans":"열 = 10","why":"한글로 쓴 숫자 '열'은 10."},{"id":"1a390364","cells":["K1","O","K1","E","K0"],"start":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["h"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["e1","e2"],["io1","io2","io3","io4","v1","v2","vtR"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["h","v"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["e1","e2"],["io1","io2","io3","io4","v1","v2"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"]],[["h","v"]],[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"]],[["e1","e2"]],[["io1","io2","io3","io4","v1","v2"]]],"k":1,"cat":"한글 숫자","hint":"한글 글자를 낱말이 아니라 숫자로 읽어 보세요.","ans":"일 + 일 = 이","why":"한글 숫자로 1 + 1 = 2."},{"id":"1f26d805","cells":["N","N","N","E","K0","K0"],"start":[["a","c","d","f","g"],["a","b","e","f","g"],["a","b","c","e","f","g"],["e1","e2"],["ib","il1","il2","im","ir1","ir2","v1","v2","vtR"],["ib","il1","il2","it","v1","v2","vtR"]],"answer":[["a","c","d","f","g"],["a","d","e","f","g"],["a","b","c","e","f","g"],["e1","e2"],["ib","il1","il2","im","ir1","ir2","v1","v2","vtR"],["ib","il1","il2","it","v1","v2","vtR"]],"accept":[[["a","c","d","f","g"]],[["a","d","e","f","g"]],[["a","b","c","e","f","g"]],[["e1","e2"]],[["ib","il1","il2","im","ir1","ir2","v1","v2","vtR"]],[["ib","il1","il2","it","v1","v2","vtR"]]],"k":1,"cat":"영어 ↔ 한자","hint":"물은 물인데, 훨씬 넓고 짠 곳이에요.","ans":"SEA = 바다","why":"SEA는 바다예요."},{"id":"ae72f707","cells":["N","N","N","N","E","W"],"start":[["a","b","e","f","g"],["b","c"],["d","e","f"],["d","e","f"],["e1","e2"],["b1","b2","c1","c2","l2","r2"]],"answer":[["b","c","e","f","g"],["b","c"],["d","e","f"],["d","e","f"],["e1","e2"],["b1","b2","c1","c2","l2","r2"]],"accept":[[["b","c","e","f","g"]],[["b","c"],["e","f"]],[["d","e","f"]],[["d","e","f"]],[["e1","e2"]],[["b1","b2","c1","c2","l2","r2"]]],"k":1,"cat":"영어 ↔ 한자","hint":"오른쪽 한자는 약이 아니라 자연과 관련 있어요.","ans":"HILL = 山","why":"HILL은 언덕·산, 뫼 산(山)."},{"id":"365d5bbf","cells":["N","N","N","N","E","W"],"start":[["a","c","d","f","g"],["a","b","c","e","f","g"],["b","c"],["d","e","f"],["e1","e2"],["b1","b2","c1","c2","m1","m2"]],"answer":[["a","c","d","f","g"],["a","b","c","d","e","f"],["b","c"],["d","e","f"],["e1","e2"],["b1","b2","c1","c2","m1","m2"]],"accept":[[["a","c","d","f","g"]],[["a","b","c","d","e","f"]],[["b","c"],["e","f"]],[["d","e","f"]],[["e1","e2"]],[["b1","b2","c1","c2","m1","m2"]]],"k":1,"cat":"영어 ↔ 한자","hint":"오른쪽 한자는 늘 발밑에 있는 것을 뜻해요.","ans":"SOIL = 土","why":"SOIL은 '흙', 흙 토(土)."},{"id":"2dda758f","cells":["K1","O","K1","E","N"],"start":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["h","v"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["e1","e2"],["a","b","c","d","g"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["h"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["e1","e2"],["a","b","c","d","f","g"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],[["h"]],[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"]],[["e1","e2"]],[["a","b","c","d","f","g"]]],"k":1,"cat":"한글 숫자","hint":"왼쪽 두 글자는 각각 어떤 수일까요?","ans":"열 - 일 = 9","why":"한글 숫자로 10 - 1 = 9."},{"id":"43a70957","cells":["W","E","N","N"],"start":[["c1","c2","m1","m2"],["e1","e2"],["b","c"],["a","b","c","d","f","g"]],"answer":[["c1","c2","m1","m2"],["e1","e2"],["b","c"],["a","b","c","d","e","f"]],"accept":[[["c1","c2","m1","m2"]],[["e1","e2"]],[["b","c"]],[["a","b","c","d","e","f"]]],"k":1,"cat":"한자 숫자","hint":"오른쪽 숫자가 조금 커 보이지 않나요?","ans":"十 = 10","why":"열 십(十)은 10."},{"id":"753981f7","cells":["N","N","N","W","E","K1"],"start":[["a","e","f","g"],["a","b","c","d","e","f"],["a","b","c","d","e","f"],["c1","c2","t1","t2"],["e1","e2"],["fb","fl2","fm2","fr1","ft","ib","il","ir","it","v","vtR"]],"answer":[["a","e","f","g"],["a","b","c","d","e","f"],["a","b","c","d","e","f"],["c1","c2","t1","t2"],["e1","e2"],["fb","fl2","fm2","fr1","ft","ib","il","im","ir","v","vtR"]],"accept":[[["a","e","f","g"]],[["a","b","c","d","e","f"]],[["a","b","c","d","e","f"]],[["c1","c2","t1","t2"]],[["e1","e2"]],[["fb","fl2","fm2","fr1","ft","ib","il","im","ir","v","vtR"]]],"k":1,"cat":"영어 ↔ 한자","hint":"영어 단어는 몸의 한 부분을 가리켜요.","ans":"FOOT = 발","why":"FOOT는 발이에요."},{"id":"74bbdba6","cells":["N","N","E","W"],"start":[["a","b","c","d","e","f"],["a","e","f","g"],["e1","e2"],["b1","b2","c1","c2","m2"]],"answer":[["b","c","d","e","f"],["a","b","e","f","g"],["e1","e2"],["b1","b2","c1","c2","m2"]],"accept":[[["b","c","d","e","f"]],[["a","b","e","f","g"]],[["e1","e2"]],[["b1","b2","c1","c2","m2"]]],"k":1,"cat":"영어 ↔ 한자","hint":"하늘 쪽을 가리키는 짧은 영어 단어예요.","ans":"UP = 上","why":"UP은 '위', 윗 상(上)."},{"id":"391d7558","cells":["K1","E","W"],"start":[["fl1","fm2","io1","io2","io3","io4","v"],["e1","e2"],["b1","b2","l1","l2","m1","m2","r1","r2","t1","t2"]],"answer":[["fl1","fm1","fm2","fr1","io1","io2","io3","io4","v"],["e1","e2"],["b1","b2","l1","l2","r1","r2","t1","t2"]],"accept":[[["fl1","fm1","fm2","fr1","io1","io2","io3","io4","v"]],[["e1","e2"]],[["b1","b2","l1","l2","r1","r2","t1","t2"]]],"k":2,"cat":"한글 ↔ 한자","hint":"밥을 먹을 때 쓰는 곳을 떠올려 보세요.","ans":"입 = 口","why":"입 구(口)."},{"id":"dd918acd","cells":["N","N","N","W","E","K1"],"start":[["a","c","d","f","g"],["a","d","e","f","g"],["a","b","c","e","f","g"],["c1","c2","t1","t2"],["e1","e2"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],"answer":[["b","c","e","f","g"],["a","d","e","f","g"],["a","b","c","e","f","g"],["c1","c2","t1","t2"],["e1","e2"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],"accept":[[["b","c","e","f","g"]],[["a","d","e","f","g"]],[["a","b","c","e","f","g"]],[["c1","c2","t1","t2"]],[["e1","e2"]],[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]]],"k":2,"cat":"영어 ↔ 한자","hint":"오른쪽 낱말은 줄을 세우는 '열'이 아니라 몸으로 느끼는 거예요.","ans":"HEAT = 열","why":"HEAT는 열(뜨거운 기운)이에요."},{"id":"580e1237","cells":["K1","O","K0","E","N","N"],"start":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["h"],["io1","io2","io3","io4","v1","v2"],["e1","e2"],["a","b","c"],["a","b","c","d","g"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["h","v"],["io1","io2","io3","io4","v1","v2"],["e1","e2"],["b","c"],["a","b","d","e","g"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],[["h","v"]],[["io1","io2","io3","io4","v1","v2"]],[["e1","e2"]],[["b","c"]],[["a","b","d","e","g"]]],"k":2,"cat":"한글 숫자","hint":"오른쪽 두 자리 수가 조금 커 보이지 않나요?","ans":"열 + 이 = 12","why":"한글 숫자로 10 + 2 = 12."},{"id":"94bd8949","cells":["K1","O","N","E","K1"],"start":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["h"],["a","c","d","f","g"],["e1","e2"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["h","v"],["a","b","c","d","f","g"],["e1","e2"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"]],[["h","v"]],[["a","b","c","d","f","g"]],[["e1","e2"]],[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]]],"k":2,"cat":"한글 숫자","hint":"양쪽에 같은 글자가 있다고 해서 꼭 같은 수일 필요는 없어요.","ans":"일 + 9 = 열","why":"1 + 9 = 10을 한글 숫자로."},{"id":"2bd617de","cells":["W","O","N","E","N","N"],"start":[["c1","c2","m1","m2"],["h","v"],["b","c","f","g"],["e1","e2"],["a","b","c"],["a","c","d","f","g"]],"answer":[["c1","c2","m1","m2"],["h","v"],["a","c","d","f","g"],["e1","e2"],["b","c"],["a","c","d","f","g"]],"accept":[[["c1","c2","m1","m2"]],[["h","v"]],[["a","c","d","f","g"]],[["e1","e2"]],[["b","c"]],[["a","c","d","f","g"]]],"k":2,"cat":"한자 숫자","hint":"왼쪽 첫 글자가 정말 기호일까요?","ans":"十 + 5 = 15","why":"十은 10, 10 + 5 = 15."},{"id":"d0478c57","cells":["W","O","W","E","N"],"start":[["b1","b2","c1","c2","m1","m2","t1","t2"],["h","v"],["b1","b2","t1","t2"],["e1","e2"],["a","c","d","e","f","g"]],"answer":[["b1","b2","m1","m2","t1","t2"],["h","v"],["b1","b2","m1","m2","t1","t2"],["e1","e2"],["a","c","d","e","f","g"]],"accept":[[["b1","b2","m1","m2","t1","t2"]],[["h","v"]],[["b1","b2","m1","m2","t1","t2"]],[["e1","e2"]],[["a","c","d","e","f","g"]]],"k":2,"cat":"한자 숫자","hint":"같은 수 두 개를 더해 6이 되는 경우를 떠올려 보세요.","ans":"三 + 三 = 6","why":"한자 숫자로 3 + 3 = 6."},{"id":"cdf6a27f","cells":["K1","E","W"],"start":[["fl1","fm2","fr1","ft","io1","io2","io3","io4","v","vtR"],["e1","e2"],["m1","m2"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["e1","e2"],["m1","m2"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"]],[["e1","e2"]],[["m1","m2"]]],"k":2,"cat":"한글 ↔ 한자","hint":"오른쪽 한자를 소리 내어 읽어 보세요.","ans":"일 = 一","why":"한 일(一). 숫자 '일'이에요."},{"id":"f5babe68","cells":["K1","O","W","E","N"],"start":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["h","v"],["m1","m2"],["e1","e2"],["a","b","c","d","e","f","g"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["h"],["m1","m2"],["e1","e2"],["a","b","c","d","f","g"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],[["h"]],[["m1","m2"]],[["e1","e2"]],[["a","b","c","d","f","g"]]],"k":2,"cat":"한글·한자 숫자","hint":"한글과 한자 모두 숫자로 읽을 수 있어요.","ans":"열 - 一 = 9","why":"한글 '열'(10)과 한자 一(1), 10 - 1 = 9."},{"id":"afb75faa","cells":["K1","E","W"],"start":[["fl1","fm2","fr1","ft","ib","il","it","v","vtR"],["e1","e2"],["c1","c2","m2","t1","t2"]],"answer":[["fl1","fm1","fm2","ft","ib","il","ir","it","v"],["e1","e2"],["c1","c2","m2","t1","t2"]],"accept":[[["fl1","fm1","fm2","ft","ib","il","ir","it","v"]],[["e1","e2"]],[["c1","c2","m2","t1","t2"]]],"k":2,"cat":"한글 ↔ 한자","hint":"오른쪽 한자와 같은 뜻을 가진 한 글자 우리말이 있어요.","ans":"밑 = 下","why":"아래 하(下). '밑'과 같은 뜻이에요."},{"id":"79d5b06e","cells":["W","O","W","E","N"],"start":[["b1","b2","c1","c2","m1","m2"],["h"],["b1","b2","t1","t2"],["e1","e2"],["a","b","c"]],"answer":[["c1","c2","m1","m2"],["h"],["b1","b2","m1","m2","t1","t2"],["e1","e2"],["a","b","c"]],"accept":[[["c1","c2","m1","m2"]],[["h"]],[["b1","b2","m1","m2","t1","t2"]],[["e1","e2"]],[["a","b","c"]]],"k":2,"cat":"한자 숫자","hint":"왼쪽 첫 글자를 숫자 한자로 볼 수 있다면 계산이 달라져요.","ans":"十 - 三 = 7","why":"한자 숫자로 10 - 3 = 7."},{"id":"daaa5ac4","cells":["W","O","W","E","N","N"],"start":[["m1","m2"],["h","v"],["b1","b2","t1","t2"],["e1","e2"],["b","c","f","g"],["a","b","d","e","g"]],"answer":[["c1","c2","m1","m2"],["h","v"],["b1","b2","t1","t2"],["e1","e2"],["b","c"],["a","b","d","e","g"]],"accept":[[["c1","c2","m1","m2"]],[["h","v"]],[["b1","b2","t1","t2"]],[["e1","e2"]],[["b","c"]],[["a","b","d","e","g"]]],"k":2,"cat":"한자 숫자","hint":"한자 숫자는 막대 몇 개만으로 훨씬 큰 수가 되기도 해요.","ans":"十 + 二 = 12","why":"한자 숫자로 10 + 2 = 12."},{"id":"769e783a","cells":["K1","E","W"],"start":[["fl1","fm2","fr1","ft","ib","il","im","it","v"],["e1","e2"],["b1","b2","l1","l2","m1","m2","r1","r2","t1","t2"]],"answer":[["fb","fl2","fm2","fr1","ft","ib","il","v","vtR"],["e1","e2"],["b1","b2","l1","l2","m1","m2","r1","r2","t1","t2"]],"accept":[[["fb","fl2","fm2","fr1","ft","ib","il","v","vtR"]],[["e1","e2"]],[["b1","b2","l1","l2","m1","m2","r1","r2","t1","t2"]]],"k":3,"cat":"한글 ↔ 한자","hint":"日은 해만 뜻하지 않아요. 달력을 넘길 때도 쓰는 말이에요.","ans":"날 = 日","why":"날 일(日). '날'은 해·하루를 뜻해요."},{"id":"a14f400f","cells":["K1","E","W"],"start":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtR"],["e1","e2"],["b1","b2","c1","c2","m2"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["e1","e2"],["c1","c2","m1","m2"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],[["e1","e2"]],[["c1","c2","m1","m2"]]],"k":3,"cat":"한글 ↔ 한자","hint":"오른쪽 한자가 위치가 아니라 수를 나타내야 해요.","ans":"열 = 十","why":"열 십(十)."},{"id":"8447b229","cells":["K0","K0","E","W"],"start":[["io1","io2","io3","io4","v1","v2"],["ib","il2","im","ir1","it","v1","v2","vtR","w1","w2"],["e1","e2"],["b1","b2","c1","c2","m1","m2"]],"answer":[["io1","io2","io3","io4","v1","v2","vtR"],["ib","il2","im","ir1","it","v1","v2","vtR","w1","w2"],["e1","e2"],["c1","c2","m2","t1","t2"]],"accept":[[["io1","io2","io3","io4","v1","v2","vtR"]],[["ib","il2","im","ir1","it","v1","v2","vtR","w1","w2"]],[["e1","e2"]],[["c1","c2","m2","t1","t2"]]],"k":3,"cat":"한글 ↔ 한자","hint":"오른쪽 한자는 방향을 나타내요. 왼쪽 낱말도 같은 뜻이 되어야 해요.","ans":"아래 = 下","why":"아래 하(下)."},{"id":"bc547781","cells":["N","N","N","N","E","W"],"start":[["a","c","d","f","g"],["a","b","c","e","f","g"],["d","e","f"],["a","d","e","f","g"],["e1","e2"],["b1","b2","m1","m2","t1","t2"]],"answer":[["a","c","d","f","g"],["a","d","e","f","g"],["d","e","f"],["a","e","f","g"],["e1","e2"],["b1","b2","l2","m1","m2","r1","t1","t2"]],"accept":[[["a","c","d","f","g"]],[["a","d","e","f","g"]],[["d","e","f"]],[["a","e","f","g"]],[["e1","e2"]],[["b1","b2","l2","m1","m2","r1","t1","t2"]]],"k":3,"cat":"영어 ↔ 한자","hint":"오른쪽 한자는 숫자처럼 생겼지만, 사람과 관련된 글자예요.","ans":"SELF = 己","why":"SELF는 '자기', 몸 기(己)."},{"id":"a6950b79","cells":["N","N","N","E","K0"],"start":[["a","b","c","d","e","f"],["e","f"],["d","e","f"],["e1","e2"],["ib","il1","il2","im","it","v1","v2","vtL"]],"answer":[["a","b","c","e","f","g"],["d","e","f"],["d","e","f"],["e1","e2"],["ib","il1","il2","it","v1","v2","vtR"]],"accept":[[["a","b","c","e","f","g"]],[["d","e","f"]],[["d","e","f"]],[["e1","e2"]],[["ib","il1","il2","it","v1","v2","vtR"]]],"k":3,"cat":"영어 ↔ 한자","hint":"'남김없이 전부'를 나타내는 말을 떠올려 보세요.","ans":"ALL = 다","why":"ALL은 '다(모두)'예요."},{"id":"1f64c12a","cells":["K1","O","K1","E","N","N"],"start":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["h"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["e1","e2"],["a","b","c","d","e","f","g"],["a","c","d","f","g"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["h","v"],["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["e1","e2"],["a","b","d","e","g"],["a","b","c","d","e","f"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],[["h","v"]],[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"]],[["e1","e2"]],[["a","b","d","e","g"]],[["a","b","c","d","e","f"]]],"k":3,"cat":"한글 숫자","hint":"왼쪽 두 글자는 같은 수예요. 오른쪽과 어울리는 계산을 찾아보세요.","ans":"열 + 열 = 20","why":"한글 숫자로 10 + 10 = 20."},{"id":"76d24b22","cells":["N","N","N","N","E","K1"],"start":[["b","c","e","f","g"],["a","b","c","d","e","f"],["d","e","f"],["a","d","e","f","g"],["e1","e2"],["fl1","fm2","ib","il","it","v","vtR"]],"answer":[["b","c","e","f","g"],["a","b","c","e","f","g"],["d","e","f"],["a","e","f","g"],["e1","e2"],["fl1","fm2","ib","il","im","ir","v","vtR"]],"accept":[[["b","c","e","f","g"]],[["a","b","c","e","f","g"]],[["d","e","f"]],[["a","e","f","g"]],[["e1","e2"]],[["fl1","fm2","ib","il","im","ir","v","vtR"]]],"k":3,"cat":"영어 ↔ 한자","hint":"케이크를 똑같이 둘로 나누면 무엇이 될까요?","ans":"HALF = 반","why":"HALF는 반(절반)이에요."},{"id":"26669ae6","cells":["K1","O","W","E","N"],"start":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v","vtL1","vtL2"],["h"],["b1","b2","t1","t2"],["e1","e2"],["b","c","f","g"]],"answer":[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"],["h","v"],["b1","b2","t1","t2"],["e1","e2"],["a","b","c","d","g"]],"accept":[[["fb","fl2","fm2","fr1","ft","io1","io2","io3","io4","v"]],[["h","v"]],[["b1","b2","t1","t2"]],[["e1","e2"]],[["a","b","c","d","g"]]],"k":3,"cat":"한글·한자 숫자","hint":"한글 숫자는 모음 하나만 바뀌어도 전혀 다른 수가 돼요.","ans":"일 + 二 = 3","why":"한글 '일'(1)과 한자 二(2), 1 + 2 = 3."}],"G":{"N":{"w":48,"p":{"a":[0,0,48,0],"g":[0,48,48,48],"d":[0,96,48,96],"f":[0,0,0,48],"e":[0,48,0,96],"b":[48,0,48,48],"c":[48,48,48,96]}},"W":{"w":96,"p":{"t1":[0,0,48,0],"t2":[48,0,96,0],"m1":[0,48,48,48],"m2":[48,48,96,48],"b1":[0,96,48,96],"b2":[48,96,96,96],"l1":[0,0,0,48],"l2":[0,48,0,96],"c1":[48,0,48,48],"c2":[48,48,48,96],"r1":[96,0,96,48],"r2":[96,48,96,96]}},"O":{"w":48,"p":{"h":[0,48,48,48],"v":[24.0,24.0,24.0,72.0]}},"E":{"w":48,"p":{"e1":[0,37.44,48,37.44],"e2":[0,58.56,48,58.56]}},"K1":{"w":144,"p":{"it":[0,0,48,0],"im":[0,24.0,48,24.0],"ib":[0,48,48,48],"il":[0,0,0,48],"ir":[48,0,48,48],"v":[96.0,0,96.0,48],"vtR":[96.0,24.0,144.0,24.0],"vtL":[48.0,24.0,96.0,24.0],"vtL1":[48.0,14.4,96.0,14.4],"vtL2":[48.0,33.6,96.0,33.6],"ft":[38.4,64.8,86.4,64.8],"fm1":[38.4,88.8,86.4,88.8],"fm2":[38.4,112.8,86.4,112.8],"fb":[38.4,160.8,86.4,160.8],"fl1":[38.4,64.8,38.4,112.8],"fl2":[38.4,112.8,38.4,160.8],"fr1":[86.4,64.8,86.4,112.8],"fr2":[86.4,112.8,86.4,160.8],"io1":[24.0,-9.94,57.94,24.0],"io2":[57.94,24.0,24.0,57.94],"io3":[-9.94,24.0,24.0,57.94],"io4":[24.0,-9.94,-9.94,24.0]}},"K0":{"w":139.2,"p":{"it":[0,0,48,0],"im":[0,48,48,48],"ib":[0,96,48,96],"il1":[0,0,0,48],"il2":[0,48,0,96],"ir1":[48,0,48,48],"ir2":[48,48,48,96],"v1":[91.2,0,91.2,48],"v2":[91.2,48,91.2,96],"vtR":[91.2,48,139.2,48],"vtL":[43.2,48,91.2,48],"w1":[139.2,0,139.2,48],"w2":[139.2,48,139.2,96],"io1":[24.0,14.06,57.94,48],"io2":[57.94,48,24.0,81.94],"io3":[-9.94,48,24.0,81.94],"io4":[24.0,14.06,-9.94,48]}}}};
+const PUZZLES=DATA.P, GEO=DATA.G;
+const GAP=20, T=8, INSET=2;
+const KEY='match30-progress';
+
+let idx=0, slots=[], init=[], history=[], solvedFlag=false;
+// 풀이 기록: 문제 고유 id 목록. 이 브라우저(localStorage)와 계정 저장소(db) 두 곳에 저장
+let progress={solved:{}, updated:0};
+try{const v=JSON.parse(localStorage.getItem(KEY)||'null'); if(v&&v.solved) progress=v}catch(e){}
+let remoteRef=null;
+const isDone=i=>!!progress.solved[PUZZLES[i].id];
+function save(){
+  progress.updated=Date.now();
+  try{localStorage.setItem(KEY,JSON.stringify(progress))}catch(e){}
+  if(remoteRef) remoteRef.set({solved:Object.keys(progress.solved),updated:progress.updated}).catch(()=>{});
+}
+async function connectRemote(){
+  try{
+    if(!window.claude||!window.claude.use) return;
+    const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+    if(!db||!user) return;
+    const uid=await user.id(); if(!uid) return;
+    remoteRef=db.doc('data/users/'+uid+'/progress');
+    const snap=await remoteRef.get();
+    const r=snap.exists?snap.data():null;
+    if(r&&Array.isArray(r.solved)&&(r.updated||0)>progress.updated){
+      progress={solved:Object.fromEntries(r.solved.map(id=>[id,true])),updated:r.updated};
+      try{localStorage.setItem(KEY,JSON.stringify(progress))}catch(e){}
+      load(idx);
+    }else if(progress.updated>(r&&r.updated||0)) save();
+  }catch(e){}
+}
+
+const P=()=>PUZZLES[idx];
+const toSlots=arr=>P().cells.map((k,i)=>({kind:k,on:new Set(arr[i])}));
+const clone=()=>slots.map(s=>({kind:s.kind,on:new Set(s.on)}));
+const same=(set,list)=>set.size===list.length&&list.every(x=>set.has(x));
+const cellH=k=>Math.max(...Object.values(GEO[k].p).flatMap(s=>[s[1],s[3]]));
+
+function counts(){
+  let moved=0,held=0;
+  slots.forEach((sl,i)=>{for(const p of init[i].on) if(!sl.on.has(p)) moved++; held+=init[i].on.size-sl.on.size});
+  return {moved,held};
+}
+const isCorrect=()=>slots.every((sl,i)=>P().accept[i].some(alt=>same(sl.on,alt)));
+
+function load(i){
+  idx=i; const p=P();
+  slots=toSlots(p.start); init=toSlots(p.start); history=[]; solvedFlag=isDone(i);
+  if(solvedFlag) slots=toSlots(p.answer);
+  document.getElementById('qno').textContent=`${i+1}번`;
+  document.getElementById('kNum').textContent=p.k;
+  document.getElementById('kMax').textContent=p.k;
+  document.getElementById('hintline').textContent='';
+  document.getElementById('hint').disabled=solvedFlag;
+  setMsg(solvedFlag?'이미 푼 문제예요. '+p.ans:'', solvedFlag?'ok':''); setWhy(solvedFlag?p.why:'');
+  render(); renderShelf();
+}
+function setMsg(t,cls=''){const m=document.getElementById('msg');m.textContent=t;m.className='msg '+cls}
+function setWhy(t){document.getElementById('why').textContent=t}
+
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const a in attrs)e.setAttribute(a,attrs[a]);parent&&parent.appendChild(e);return e}
+function frame([x1,y1,x2,y2],parent,cls){
+  const len=Math.hypot(x2-x1,y2-y1), ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+  const g=el('g',{class:cls,transform:`translate(${x1} ${y1}) rotate(${ang})`},parent);
+  return {g,len};
+}
+function drawStick(parent,seg,cls){
+  const {g,len}=frame(seg,parent,cls), L=len-INSET*2;
+  el('rect',{class:'hit',x:INSET-6,y:-T/2-6,width:L+12,height:T+12},g);
+  el('rect',{class:'body',x:INSET,y:-T/2,width:L,height:T,rx:2,fill:'url(#wood)'},g);
+  const fl=el('g',{class:'flame',style:`--d:${(Math.random()*.4).toFixed(2)}s`},g);
+  el('circle',{cx:INSET+4,cy:0,r:11,fill:'url(#flame)'},fl);
+  el('ellipse',{cx:INSET+4,cy:0,rx:6.5,ry:5.5,fill:'url(#head)'},g);
+  return g;
+}
+function drawGhost(parent,seg){
+  const {g,len}=frame(seg,parent,'ghost'), L=len-INSET*2;
+  el('rect',{class:'hit',x:INSET-4,y:-T/2-4,width:L+8,height:T+8},g);
+  el('rect',{class:'slot',x:INSET,y:-T/2,width:L,height:T,rx:2},g);
+  return g;
+}
+
+function render(lit=false){
+  const svg=document.getElementById('eq'); svg.innerHTML='';
+  const hs=slots.map(s=>cellH(s.kind)), maxH=Math.max(...hs);
+  let x=0; const xs=slots.map((s,i)=>{if(i>0) x+=(s.kind==='O'&&slots[i-1].kind==='O')?4:GAP; const v=x; x+=GEO[s.kind].w; return v}); x+=GAP;
+  svg.setAttribute('viewBox',`-14 -14 ${x-GAP+28} ${maxH+28}`);
+  const defs=el('defs',{},svg);
+  const lg=el('linearGradient',{id:'wood',x1:0,y1:0,x2:0,y2:1},defs);
+  el('stop',{offset:0,'stop-color':'#f3d9a4'},lg);el('stop',{offset:.55,'stop-color':'#dcb574'},lg);el('stop',{offset:1,'stop-color':'#b88a4c'},lg);
+  const rg=el('radialGradient',{id:'head',cx:.38,cy:.35,r:.7},defs);
+  el('stop',{offset:0,'stop-color':'#e2553b'},rg);el('stop',{offset:.7,'stop-color':'#a8231a'},rg);el('stop',{offset:1,'stop-color':'#5e130e'},rg);
+  const fg=el('radialGradient',{id:'flame'},defs);
+  el('stop',{offset:0,'stop-color':'#fff2b0'},fg);el('stop',{offset:.45,'stop-color':'#ffb43c','stop-opacity':.85},fg);el('stop',{offset:1,'stop-color':'#ff6a1a','stop-opacity':0},fg);
+
+  const {held,moved}=counts();
+  const holding=held>0&&!solvedFlag;
+  svg.classList.toggle('holding',holding);
+  svg.classList.toggle('lit',lit);
+
+  slots.forEach((sl,i)=>{
+    const g=el('g',{transform:`translate(${xs[i]},${(maxH-hs[i])/2})`},svg);
+    const geo=GEO[sl.kind].p;
+    for(const p in geo){
+      if(sl.kind==='E'||sl.on.has(p)) continue;
+      const gh=drawGhost(g,geo[p]);
+      if(holding){gh.setAttribute('tabindex',0);gh.setAttribute('role','button');gh.setAttribute('aria-label',`${i+1}번째 칸에 성냥 놓기`)}
+      gh.addEventListener('click',()=>place(i,p));
+      gh.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();place(i,p)}});
+    }
+    for(const p in geo){
+      if(!sl.on.has(p)) continue;
+      if(sl.kind==='E'){drawStick(g,geo[p],'fixed');continue}
+      const s=drawStick(g,geo[p],'stick');
+      s.setAttribute('tabindex',0);s.setAttribute('role','button');s.setAttribute('aria-label',`${i+1}번째 칸 성냥 집기`);
+      s.addEventListener('click',()=>pick(i,p));
+      s.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(i,p)}});
+    }
+  });
+  document.getElementById('moved').textContent=solvedFlag?P().k:moved;
+  document.getElementById('held').textContent=held;
+  document.getElementById('undo').disabled=!history.length||solvedFlag;
+  document.getElementById('check').disabled=solvedFlag;
+  document.getElementById('prev').disabled=idx===0;
+  document.getElementById('next').disabled=idx===PUZZLES.length-1;
+}
+
+function pick(i,p){
+  if(solvedFlag) return;
+  const k=P().k, {moved}=counts();
+  if(init[i].on.has(p)&&moved>=k){setMsg(`성냥은 ${k}개까지만 옮길 수 있어요. 되돌리기를 써 보세요.`,'warn');return}
+  history.push(clone()); slots[i].on.delete(p); setMsg('놓을 자리를 눌러 내려놓으세요.'); render();
+}
+function place(i,p){
+  if(solvedFlag||counts().held<=0) return;
+  history.push(clone()); slots[i].on.add(p); setMsg(''); render();
+}
+function checkAnswer(){
+  if(solvedFlag) return;
+  const {moved,held}=counts(), k=P().k;
+  if(held>0){setMsg('손에 든 성냥을 먼저 내려놓으세요.','warn');return}
+  if(moved===0){setMsg('아직 성냥을 옮기지 않았어요.','warn');return}
+  if(moved<k){setMsg(`성냥 ${k}개를 옮겨야 해요. 지금 ${moved}개 옮겼어요.`,'warn');return}
+  if(isCorrect()){
+    solvedFlag=true; progress.solved[PUZZLES[idx].id]=true; save();
+    setMsg('정답! '+P().ans,'ok'); setWhy(P().why);
+    document.getElementById('hint').disabled=true;
+    render(true); renderShelf();
+  }else setMsg('아직 아니에요. 다시 생각해 보세요.','warn');
+}
+
+function renderShelf(){
+  const box=document.getElementById('groups'); box.innerHTML='';
+  for(const k of [1,2,3]){
+    const row=document.createElement('div'); row.className='group';
+    row.innerHTML=`<div class="lab">${k}개 이동</div>`;
+    const chips=document.createElement('div'); chips.className='chips';
+    PUZZLES.forEach((p,i)=>{ if(p.k!==k) return;
+      const b=document.createElement('button'); b.className='chip'; b.textContent=i+1;
+      if(isDone(i)) b.classList.add('done');
+      if(i===idx) b.classList.add('cur');
+      b.setAttribute('aria-label',`${i+1}번 문제${isDone(i)?', 풀었음':''}`);
+      b.onclick=()=>load(i); chips.appendChild(b);
+    });
+    row.appendChild(chips); box.appendChild(row);
+  }
+  document.getElementById('solvedCount').textContent=PUZZLES.filter((p,i)=>isDone(i)).length;
+}
+
+document.getElementById('undo').onclick=()=>{if(history.length&&!solvedFlag){slots=history.pop();setMsg('');render()}};
+document.getElementById('reset').onclick=()=>{slots=toSlots(P().start);history=[];solvedFlag=false;setMsg('');setWhy('');document.getElementById('hint').disabled=!!document.getElementById('hintline').textContent;render()};
+document.getElementById('hint').onclick=()=>{
+  if(solvedFlag) return;
+  document.getElementById('hintline').textContent=P().hint;
+  document.getElementById('hint').disabled=true;
+};
+document.getElementById('check').onclick=checkAnswer;
+document.getElementById('prev').onclick=()=>idx>0&&load(idx-1);
+document.getElementById('next').onclick=()=>idx<PUZZLES.length-1&&load(idx+1);
+
+const wipeBox=document.getElementById('wipeBox');
+document.getElementById('wipe').onclick=()=>{wipeBox.hidden=!wipeBox.hidden};
+document.getElementById('wipeNo').onclick=()=>{wipeBox.hidden=true};
+document.getElementById('wipeYes').onclick=()=>{
+  progress={solved:{},updated:0}; save(); wipeBox.hidden=true;
+  load(0); setMsg('기록을 모두 지웠어요. 1번부터 다시 시작해요.');
+};
+
+let start=0; for(let i=0;i<PUZZLES.length;i++){if(!isDone(i)){start=i;break}}
+load(start);
+connectRemote();
+</script>
+
+</body></html>
