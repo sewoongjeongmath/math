@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>정세웅의 수학세상</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Gowun+Batang:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f5ef; --paper:#ffffff; --ink:#1d2430; --muted:#6a7280; --line:#e4e0d6; --grid:rgba(40,80,140,.07);
+    --c1:#2f6fb0; --c2:#2f8a5f; --c3:#c0622b; --c4:#7a4bb0;
+    --shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.06); --r:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14171c; --paper:#1d2127; --ink:#ecebe6; --muted:#9aa1ab; --line:#2d323a; --grid:rgba(140,180,240,.06);
+      --c1:#7fb2e6; --c2:#7cc79f; --c3:#e9a070; --c4:#b79ae6; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3); }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:24px 24px;line-height:1.55;font-size:15px;min-height:100vh}
+  a{color:inherit}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px 70px}
+  header{padding:44px 0 26px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .home{text-decoration:none;display:block}
+  h1{font-family:"Gowun Batang",serif;font-size:clamp(28px,5vw,40px);margin:0;letter-spacing:-.01em}
+  h1 .x{color:var(--c1)}
+  .sub{color:var(--muted);margin-top:4px}
+  .search{position:relative}
+  .search input{width:260px;max-width:100%;padding:11px 14px 11px 38px;border:1px solid var(--line);border-radius:12px;background:var(--paper);font:inherit;color:inherit;outline:none}
+  .search input:focus{border-color:var(--c1)}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-size:15px;margin:0 0 20px;font-weight:500}
+  .crumbs a{text-decoration:none;color:var(--muted);padding:3px 8px;border-radius:8px}
+  .crumbs a:hover{background:var(--paper);color:var(--ink)}
+  .crumbs .sep{color:var(--line)}
+  .crumbs b{padding:3px 8px}
+  h2{font-size:24px;margin:0 0 18px;font-weight:900}
+  .sec{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin:4px 0 12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:30px}
+  .card{display:block;text-decoration:none;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);transition:transform .14s,border-color .14s;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-3px);border-color:var(--acc)}
+  .card::after{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--acc)}
+  .card .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff;background:var(--acc);margin-bottom:14px}
+  @media (prefers-color-scheme: dark){ .card .ic{color:#14171c} }
+  .card .nm{font-weight:700;font-size:17px}
+  .card .meta{font-size:13px;color:var(--muted);margin-top:2px}
+  .big .card{padding:26px 22px}
+  .big .card .ic{width:58px;height:58px;font-size:26px;border-radius:15px}
+  .big .card .nm{font-size:21px}
+  .list{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+  .item{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 18px;border-top:1px solid var(--line);text-decoration:none}
+  .item:first-child{border-top:none}
+  .item:hover{background:var(--bg)}
+  .tag{flex:none;font-size:11px;font-weight:800;letter-spacing:.04em;padding:5px 8px;border-radius:7px;color:#fff;min-width:48px;text-align:center}
+  .tag.html{background:var(--c3)} .tag.link{background:var(--c1)} .tag.file{background:var(--c2)}
+  @media (prefers-color-scheme: dark){ .tag{color:#14171c} }
+  .item .t{font-weight:700}
+  .item .d{font-size:13px;color:var(--muted)}
+  .item .p{font-size:12px;color:var(--muted)}
+  .item .main{flex:1;min-width:0;text-decoration:none}
+  .item .t{overflow-wrap:anywhere}
+  .item .main:hover .t{color:var(--c1)}
+  .ib{flex:none;border:1px solid transparent;border-radius:8px;padding:6px 10px;font-size:13px;color:var(--muted);text-decoration:none;white-space:nowrap}
+  .ib:hover{background:var(--paper);border-color:var(--line);color:var(--ink)}
+  @media (max-width:560px){ .item{flex-wrap:wrap} .item .main{flex-basis:calc(100% - 70px)} }
+  .empty{text-align:center;padding:54px 20px;color:var(--muted);border:2px dashed var(--line);border-radius:var(--r);background:color-mix(in srgb,var(--paper) 60%,transparent)}
+  .empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:2px}
+  footer{margin-top:50px;color:var(--muted);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="home" href="#top" data-home>
+      <h1 id="title">정세웅의 수학세상</h1>
+      <div class="sub" id="subtitle"></div>
+    </a>
+    <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="자료 검색" autocomplete="off"></label>
+  </header>
+  <nav class="crumbs" id="crumbs"></nav>
+  <div id="content"></div>
+  <footer id="foot"></footer>
+</div>
+<script>
+(async () => {
+  const ACC = ["var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
+  const ICON = {"중1":"1","중2":"2","중3":"3","방탈출":"🔐"};
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const safeUrl = u => /^https?:\/\//i.test(u||"") ? u : "#";
+  const fileHref = p => p.split("/").map(encodeURIComponent).join("/");
+  const size = b => b==null ? "" : b<1024 ? b+" B" : b<1048576 ? Math.round(b/1024)+" KB" : (b/1048576).toFixed(1)+" MB";
+
+  let SITE;
+  try {
+    const r = await fetch("files.json", {cache:"no-store"});
+    if(!r.ok) throw new Error(r.status);
+    SITE = await r.json();
+  } catch(e) {
+    $("#content").innerHTML = `<div class="empty"><b>자료 목록을 불러오지 못했어요</b>잠시 후 새로고침해 주세요.</div>`;
+    return;
+  }
+
+  const byId = new Map(), parent = new Map(), accOf = new Map();
+  (function walk(list, par, acc){ (list||[]).forEach((f,i) => { const a = acc ?? ACC[i % ACC.length]; byId.set(f.path, f); parent.set(f.path, par); accOf.set(f.path, a); walk(f.folders, f.path, a); }); })(SITE.folders, null, null);
+  const pathOf = id => { const p=[]; let c=id; while(c && byId.has(c)){ p.unshift(byId.get(c)); c=parent.get(c); } return p; };
+  const count = f => (f.items||[]).length + (f.folders||[]).reduce((n,s)=>n+count(s),0);
+
+  $("#title").innerHTML = esc(SITE.title).replace("수학", '<span class="x">수학</span>');
+  $("#subtitle").textContent = SITE.subtitle || "";
+  $("#foot").textContent = "© " + SITE.title;
+  document.title = SITE.title;
+
+  let q = "";
+  const cur = () => { let h = location.hash.replace(/^#/,""); try{ h = decodeURIComponent(h); }catch(e){} return byId.has(h) ? h : ""; };
+  const link = id => "#" + encodeURIComponent(id);
+
+  function folderCard(f){
+    const n = count(f), s = (f.folders||[]).length;
+    return `<a class="card" href="${link(f.path)}" style="--acc:${accOf.get(f.path)}">
+      <div class="ic">${esc(ICON[f.name] || f.name.slice(0,1))}</div>
+      <div class="nm">${esc(f.name)}</div>
+      <div class="meta">${s?`폴더 ${s} · `:""}자료 ${n}</div></a>`;
+  }
+  function itemRow(it, folderId, showPath){
+    const href = it.type === "link" ? safeUrl(it.url) : fileHref(it.path);
+    const tag = it.type === "html" ? ["html","HTML"] : it.type === "link" ? ["link","링크"] : ["file",(it.ext||"파일").toUpperCase().slice(0,4)];
+    const p = showPath ? `<div class="p">${esc(pathOf(folderId).map(f=>f.name).join(" › "))}</div>` : "";
+    const d = it.type === "file" ? `<div class="d">${size(it.size)}</div>` : "";
+    const fname = it.type === "link" ? "" : it.path.split("/").pop();
+    const dl = it.type === "link" ? "" : `<a class="ib" href="${esc(href)}" download="${esc(fname)}">⬇ 받기</a>`;
+    return `<div class="item">
+      <span class="tag ${tag[0]}">${esc(tag[1])}</span>
+      <a class="main" href="${esc(href)}" target="_blank" rel="noopener"><div class="t">${esc(it.title)}</div>${d}${p}</a>
+      <a class="ib" href="${esc(href)}" target="_blank" rel="noopener">${it.type==="html"?"▶ 실행":"↗ 열기"}</a>${dl}</div>`;
+  }
+
+  function render(){
+    const id = cur(); const c = $("#content");
+    if(q){
+      const k = q.toLowerCase(); const fs=[], is=[];
+      byId.forEach((f,fid) => { if(f.name.toLowerCase().includes(k)) fs.push(f);
+        (f.items||[]).forEach(it => { if(it.title.toLowerCase().includes(k)) is.push([it,fid]); }); });
+      $("#crumbs").innerHTML = `<a href="${id?link(id):"#top"}" data-clear>← 돌아가기</a><b>“${esc(q)}” 검색 결과</b>`;
+      c.innerHTML = (!fs.length && !is.length) ? `<div class="empty"><b>찾는 자료가 없어요</b>다른 검색어로 찾아보세요.</div>` :
+        (fs.length?`<div class="sec">폴더</div><div class="grid">${fs.map(folderCard).join("")}</div>`:"") +
+        (is.length?`<div class="sec">자료 ${is.length}</div><div class="list">${is.map(([it,f])=>itemRow(it,f,true)).join("")}</div>`:"");
+      return;
+    }
+    if(!id){
+      $("#crumbs").innerHTML = "";
+      c.innerHTML = (SITE.folders||[]).length ? `<div class="grid big">${SITE.folders.map(folderCard).join("")}</div>` : `<div class="empty"><b>준비 중이에요</b></div>`;
+      return;
+    }
+    const f = byId.get(id), p = pathOf(id);
+    $("#crumbs").innerHTML = `<a href="#top">처음</a>` + p.map((x,i)=> `<span class="sep">›</span>` + (i===p.length-1 ? `<b>${esc(x.name)}</b>` : `<a href="${link(x.path)}">${esc(x.name)}</a>`)).join("");
+    let h = "";
+    if((f.folders||[]).length) h += `<div class="sec">폴더</div><div class="grid">${f.folders.map(folderCard).join("")}</div>`;
+    if((f.items||[]).length) h += `<div class="sec">자료 ${f.items.length}</div><div class="list">${f.items.map(it=>itemRow(it,id,false)).join("")}</div>`;
+    c.innerHTML = h || `<div class="empty"><b>아직 자료가 없어요</b>곧 올라올 거예요.</div>`;
+    scrollTo(0,0);
+  }
+  addEventListener("hashchange", render);
+  document.addEventListener("click", e => { if(e.target.closest("[data-clear]")){ q=""; $("#q").value=""; setTimeout(render); } });
+  $("#q").addEventListener("input", e => { q = e.target.value.trim(); render(); });
+  render();
+})();
+</script>
+</body>
+</html>
