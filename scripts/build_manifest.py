@@ -7,12 +7,36 @@
 - 그 밖의 파일(pdf, 이미지 등) = 파일 자료
 - 이름이 . 또는 _ 로 시작하는 파일/폴더는 숨김
 """
-import json, os, re, sys, unicodedata
+import json, os, re, subprocess, sys, unicodedata
 
 nfc = lambda s: unicodedata.normalize("NFC", s)
 
 ROOT = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else ".")
 SKIP_TOP = {"scripts", "index.html", "site.json", "files.json", "README.md"}
+
+
+def git_times(root):
+    """경로 → 마지막으로 추가·수정된 시각(유닉스 초). 기록을 못 읽으면 빈 dict."""
+    def git(*a):
+        return subprocess.run(["git", "-c", "core.quotepath=off", *a], cwd=root,
+                              capture_output=True, text=True, check=True).stdout
+    try:
+        if git("rev-parse", "--is-shallow-repository").strip() == "true":
+            git("fetch", "--unshallow", "--quiet")
+        out = git("log", "--format=%x00%ct", "--name-only", "--no-renames", "--diff-filter=AM")
+    except (OSError, subprocess.CalledProcessError) as e:
+        print("git 기록을 읽지 못함:", e, file=sys.stderr)
+        return {}
+    times, ts = {}, None
+    for line in out.splitlines():
+        if line.startswith("\x00"):
+            ts = int(line[1:])
+        elif line and ts is not None:
+            times.setdefault(nfc(line), ts)
+    return times
+
+
+TIMES = {}
 
 
 def natural_key(s):
@@ -52,15 +76,16 @@ def scan(rel):
         if ext == ".url":
             url = read_url(p_abs)
             if url and re.match(r"https?://", url, re.I):
-                node["items"].append({"type": "link", "title": nfc(stem), "url": url})
+                node["items"].append({"type": "link", "title": nfc(stem), "url": url, "added": TIMES.get(nfc(p_rel))})
         elif ext in (".html", ".htm"):
-            node["items"].append({"type": "html", "title": nfc(stem), "path": p_rel})
+            node["items"].append({"type": "html", "title": nfc(stem), "path": p_rel, "added": TIMES.get(nfc(p_rel))})
         else:
             node["items"].append({"type": "file", "title": nfc(stem), "ext": ext.lstrip("."),
-                                  "path": p_rel, "size": os.path.getsize(p_abs)})
+                                  "path": p_rel, "size": os.path.getsize(p_abs), "added": TIMES.get(nfc(p_rel))})
     return node
 
 
+TIMES = git_times(ROOT)
 tree = scan("")
 cfg = {}
 try:
