@@ -21,7 +21,21 @@
     background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
     background-size:24px 24px;line-height:1.55;font-size:15px;min-height:100vh}
   a{color:inherit}
-  .wrap{max-width:1040px;margin:0 auto;padding:0 22px 70px}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 22px 70px}
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:26px;align-items:start}
+  .side{position:sticky;top:18px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+  .side h3{margin:0;padding:14px 16px 12px;font-size:15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px}
+  .side h3 .cnt{margin-left:auto;font-size:12px;color:var(--muted);font-weight:500}
+  .ri{display:flex;gap:10px;padding:10px 16px;border-top:1px solid var(--line);text-decoration:none;align-items:flex-start}
+  .ri:first-of-type{border-top:none}
+  .ri:hover{background:var(--bg)}
+  .ri .tag{min-width:0;width:44px;flex:none;font-size:10px;padding:4px 0;margin-top:2px}
+  .ri .t{font-weight:700;font-size:14px;overflow-wrap:anywhere;line-height:1.4}
+  .ri:hover .t{color:var(--c1)}
+  .ri .d{font-size:12px;color:var(--muted);margin-top:2px}
+  .ri .new{font-size:9px;padding:1px 6px;margin-left:4px}
+  .side .none{padding:18px 16px;color:var(--muted);font-size:13px}
+  @media (max-width:980px){ .layout{grid-template-columns:1fr} .side{position:static} }
   header{padding:44px 0 26px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
   .home{text-decoration:none;display:block}
   h1{font-family:"Gowun Batang",serif;font-size:clamp(28px,5vw,40px);margin:0;letter-spacing:-.01em}
@@ -84,8 +98,13 @@
     </a>
     <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="자료 검색" autocomplete="off"></label>
   </header>
-  <nav class="crumbs" id="crumbs"></nav>
-  <div id="content"></div>
+  <div class="layout">
+    <div>
+      <nav class="crumbs" id="crumbs"></nav>
+      <div id="content"></div>
+    </div>
+    <aside class="side" id="recent" aria-label="최근 올라온 자료"></aside>
+  </div>
   <footer id="foot"></footer>
 </div>
 <script>
@@ -164,10 +183,7 @@
     }
     if(!id){
       $("#crumbs").innerHTML = "";
-      const todays = []; byId.forEach((f,fid) => (f.items||[]).forEach(it => { if(isNew(it)) todays.push([it,fid]); }));
-      todays.sort((a,b)=>(b[0].added||0)-(a[0].added||0));
-      const t = todays.length ? `<div class="today"><h3>${NEW.replace('class="new"','class="new" style="margin:0"')}오늘 올라온 자료 ${todays.length}</h3><div class="list">${todays.map(([it,f])=>itemRow(it,f,true)).join("")}</div></div>` : "";
-      c.innerHTML = t + ((SITE.folders||[]).length ? `<div class="grid big">${SITE.folders.map(folderCard).join("")}</div>` : `<div class="empty"><b>준비 중이에요</b></div>`);
+      c.innerHTML = ((SITE.folders||[]).length ? `<div class="grid big">${SITE.folders.map(folderCard).join("")}</div>` : `<div class="empty"><b>준비 중이에요</b></div>`);
       return;
     }
     const f = byId.get(id), p = pathOf(id);
@@ -178,6 +194,25 @@
     c.innerHTML = h || `<div class="empty"><b>아직 자료가 없어요</b>곧 올라올 거예요.</div>`;
     scrollTo(0,0);
   }
+  function relDay(t){
+    const a = new Date(dayKey(new Date(t*1000))), b = new Date(TODAY);
+    const n = Math.round((b - a) / 86400000);
+    return n <= 0 ? "오늘" : n === 1 ? "어제" : n < 7 ? `${n}일 전` : fmtDate(t);
+  }
+  function renderRecent(){
+    const all = [];
+    byId.forEach((f,fid) => (f.items||[]).forEach(it => { if(it.added) all.push([it,fid]); }));
+    all.sort((a,b) => b[0].added - a[0].added);
+    const top = all.slice(0, 10), nToday = all.filter(([it]) => isNew(it)).length;
+    $("#recent").innerHTML = `<h3>🕒 최근 올라온 자료${nToday?`<span class="cnt">오늘 ${nToday}개</span>`:""}</h3>` +
+      (top.length ? top.map(([it,fid]) => {
+        const href = it.type === "link" ? safeUrl(it.url) : fileHref(it.path);
+        const tag = it.type === "html" ? ["html","HTML"] : it.type === "link" ? ["link","링크"] : ["file",(it.ext||"파일").toUpperCase().slice(0,4)];
+        return `<a class="ri" href="${esc(href)}" target="_blank" rel="noopener"><span class="tag ${tag[0]}">${esc(tag[1])}</span>
+          <div><div class="t">${esc(it.title)}${isNew(it)?NEW:""}</div><div class="d">${esc(pathOf(fid).map(x=>x.name).join(" › "))} · ${relDay(it.added)}</div></div></a>`;
+      }).join("") : `<div class="none">아직 올라온 자료가 없어요.</div>`);
+  }
+  renderRecent();
   addEventListener("hashchange", render);
   document.addEventListener("click", e => { if(e.target.closest("[data-clear]")){ q=""; $("#q").value=""; setTimeout(render); } });
   $("#q").addEventListener("input", e => { q = e.target.value.trim(); render(); });
