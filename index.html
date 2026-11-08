@@ -65,6 +65,11 @@
   .ib{flex:none;border:1px solid transparent;border-radius:8px;padding:6px 10px;font-size:13px;color:var(--muted);text-decoration:none;white-space:nowrap}
   .ib:hover{background:var(--paper);border-color:var(--line);color:var(--ink)}
   @media (max-width:560px){ .item{flex-wrap:wrap} .item .main{flex-basis:calc(100% - 70px)} }
+  .new{display:inline-block;background:#e5484d;color:#fff;font-size:10px;font-weight:800;letter-spacing:.05em;padding:2px 7px;border-radius:999px;vertical-align:2px;margin-left:6px}
+  .card .new{position:absolute;top:14px;right:14px;margin:0;font-size:11px;padding:3px 9px}
+  .today{border:1px solid #f1c9c9;background:color-mix(in srgb,#e5484d 6%,var(--paper));border-radius:var(--r);padding:14px 16px 6px;margin-bottom:24px}
+  .today h3{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .today .list{box-shadow:none;margin-bottom:8px}
   .empty{text-align:center;padding:54px 20px;color:var(--muted);border:2px dashed var(--line);border-radius:var(--r);background:color-mix(in srgb,var(--paper) 60%,transparent)}
   .empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:2px}
   footer{margin-top:50px;color:var(--muted);font-size:13px;text-align:center}
@@ -103,6 +108,13 @@
     return;
   }
 
+  const dayKey = d => new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+  const TODAY = dayKey(new Date());
+  const isNew = it => !!it.added && dayKey(new Date(it.added*1000)) === TODAY;
+  const fmtDate = t => { const k = dayKey(new Date(t*1000)).split("-"); return `${k[0]}.${k[1]}.${k[2]}`; };
+  const hasNew = f => (f.items||[]).some(isNew) || (f.folders||[]).some(hasNew);
+  const NEW = `<span class="new">NEW</span>`;
+
   const byId = new Map(), parent = new Map(), accOf = new Map();
   (function walk(list, par, acc){ (list||[]).forEach((f,i) => { const a = acc ?? ACC[i % ACC.length]; byId.set(f.path, f); parent.set(f.path, par); accOf.set(f.path, a); walk(f.folders, f.path, a); }); })(SITE.folders, null, null);
   const pathOf = id => { const p=[]; let c=id; while(c && byId.has(c)){ p.unshift(byId.get(c)); c=parent.get(c); } return p; };
@@ -122,18 +134,19 @@
     return `<a class="card" href="${link(f.path)}" style="--acc:${accOf.get(f.path)}">
       <div class="ic">${esc(ICON[f.name] || f.name.slice(0,1))}</div>
       <div class="nm">${esc(f.name)}</div>
-      <div class="meta">${s?`폴더 ${s} · `:""}자료 ${n}</div></a>`;
+      <div class="meta">${s?`폴더 ${s} · `:""}자료 ${n}</div>${hasNew(f)?NEW:""}</a>`;
   }
   function itemRow(it, folderId, showPath){
     const href = it.type === "link" ? safeUrl(it.url) : fileHref(it.path);
     const tag = it.type === "html" ? ["html","HTML"] : it.type === "link" ? ["link","링크"] : ["file",(it.ext||"파일").toUpperCase().slice(0,4)];
     const p = showPath ? `<div class="p">${esc(pathOf(folderId).map(f=>f.name).join(" › "))}</div>` : "";
-    const d = it.type === "file" ? `<div class="d">${size(it.size)}</div>` : "";
+    const meta = [it.type === "file" ? size(it.size) : "", it.added ? fmtDate(it.added) : ""].filter(Boolean).join(" · ");
+    const d = meta ? `<div class="d">${meta}</div>` : "";
     const fname = it.type === "link" ? "" : it.path.split("/").pop();
     const dl = it.type === "link" ? "" : `<a class="ib" href="${esc(href)}" download="${esc(fname)}">⬇ 받기</a>`;
     return `<div class="item">
       <span class="tag ${tag[0]}">${esc(tag[1])}</span>
-      <a class="main" href="${esc(href)}" target="_blank" rel="noopener"><div class="t">${esc(it.title)}</div>${d}${p}</a>
+      <a class="main" href="${esc(href)}" target="_blank" rel="noopener"><div class="t">${esc(it.title)}${isNew(it)?NEW:""}</div>${d}${p}</a>
       <a class="ib" href="${esc(href)}" target="_blank" rel="noopener">${it.type==="html"?"▶ 실행":"↗ 열기"}</a>${dl}</div>`;
   }
 
@@ -151,7 +164,10 @@
     }
     if(!id){
       $("#crumbs").innerHTML = "";
-      c.innerHTML = (SITE.folders||[]).length ? `<div class="grid big">${SITE.folders.map(folderCard).join("")}</div>` : `<div class="empty"><b>준비 중이에요</b></div>`;
+      const todays = []; byId.forEach((f,fid) => (f.items||[]).forEach(it => { if(isNew(it)) todays.push([it,fid]); }));
+      todays.sort((a,b)=>(b[0].added||0)-(a[0].added||0));
+      const t = todays.length ? `<div class="today"><h3>${NEW.replace('class="new"','class="new" style="margin:0"')}오늘 올라온 자료 ${todays.length}</h3><div class="list">${todays.map(([it,f])=>itemRow(it,f,true)).join("")}</div></div>` : "";
+      c.innerHTML = t + ((SITE.folders||[]).length ? `<div class="grid big">${SITE.folders.map(folderCard).join("")}</div>` : `<div class="empty"><b>준비 중이에요</b></div>`);
       return;
     }
     const f = byId.get(id), p = pathOf(id);
