@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>도형 방어선</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--page:#e6ece8;--bg:#0f1a19;--ink:#e8efe6;--acc:#f2b84b;--ok:#4aa3c7;--bad:#d1495b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#070d0c}}
+:root[data-theme="dark"]{--page:#070d0c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--page);display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',system-ui,sans-serif;color:var(--ink);touch-action:none;user-select:none}
+#w{position:relative;width:min(100%,calc((100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))*9/16));aspect-ratio:9/16;background:var(--bg);overflow:hidden}
+canvas{width:100%;height:100%;display:block}
+#o{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;text-align:center;background:rgba(8,14,13,.9)}
+#o[hidden]{display:none}
+h1,.q{font-family:'Black Han Sans','Noto Sans KR',sans-serif;font-weight:400;margin:0}
+h1{font-size:32px;line-height:1.15}
+.q{font-size:36px;color:var(--acc)}
+p{margin:0;font-size:13px;line-height:1.4;opacity:.9;max-width:290px}
+button{font:700 15px 'Noto Sans KR',sans-serif;color:var(--ink);background:#26413c;border:2px solid #3b6159;border-radius:10px;padding:10px 14px;cursor:pointer}
+button.p{background:var(--acc);color:#1a1300;border-color:var(--acc)}
+button:focus-visible{outline:3px solid var(--ok);outline-offset:2px}
+.modebuttons{display:flex;flex-direction:column;gap:6px;width:min(280px,100%)}button.hard{background:#793d42;border-color:#b95b62;color:#fff} button.challenge{background:#592f6b;border-color:#8b4da8;color:#fff} .rank-tabs{display:flex;gap:4px;width:min(330px,100%)}.rank-tabs button{flex:1;padding:7px 3px;font-size:13px}
+#name{font:700 18px 'Noto Sans KR',sans-serif;text-align:center;width:min(280px,90%);box-sizing:border-box;padding:10px 12px;border-radius:10px;border:2px solid #3b6159;background:#152522;color:var(--ink)}
+#rank{width:min(330px,100%);max-height:240px;overflow:auto;text-align:left}.rh{display:flex;justify-content:space-between;gap:8px,padding:6px 9px;border-bottom:1px solid #29433e;font-size:13px}.rh.me{background:#3b3520}.rankerr{font-size:12px;opacity:.7}
+#pad{display:grid;grid-template-columns:repeat(3,56px);gap:6px}
+#pad button{padding:5px 0;font-size:18px}
+#ans{font:400 34px 'Black Han Sans',sans-serif;min-height:44px;min-width:140px;border-bottom:3px solid var(--acc)}
+#tb{width:230px;height:8px;border-radius:4px;background:#26413c;overflow:hidden}
+#ti{display:block;height:100%;background:var(--acc)}
+#o.live{background:none;justify-content:flex-start;padding:72px 16px 0;pointer-events:none}
+#o.live>*{pointer-events:auto}
+#qp{display:flex;flex-direction:column;align-items:center;gap:7px;background:rgba(8,14,13,.88);border:2px solid #3b6159;border-radius:14px;padding:10px 14px}
+#qp .q{font-size:30px}#qp #ans{font-size:28px;min-height:36px}
+.sh{animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@media(prefers-reduced-motion:reduce){.sh{animation:none}}
+#pad{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;width:100%}#pad button{padding:8px 0;font-size:15px}
+#qp{width:min(310px,calc(100% - 8px));box-sizing:border-box;gap:5px}#qp p{font-size:12px}#qp #ans{font-size:26px}
+.fg{width:220px;max-width:100%;height:auto}.fg polygon{fill:rgba(255,255,255,.05);stroke:#e8efe6;stroke-width:1.6;stroke-linejoin:round}.fg line{stroke:#e8efe6;stroke-width:1.6}.fg line.pr{stroke:#f2b84b}
+.fg text{fill:#ffd36a;font:700 11px 'Noto Sans KR',sans-serif;text-anchor:middle;dominant-baseline:middle}.fg text.v{fill:#e8efe6}.fg text.x{fill:#ff8f9f;font-size:13px}
+.qt{font:700 14px/1.35 'Noto Sans KR',sans-serif;color:var(--acc);max-width:100%}
+.opts{display:flex;flex-direction:column;gap:5px;width:100%}.opts button{padding:8px 10px;font-size:15px}.opts.ox{flex-direction:row}.opts.ox button{flex:1;font-size:18px;padding:12px 0}
+</style></head>
+<body>
+<div id="w"><canvas id="c" width="360" height="640"></canvas><div id="o"></div></div>
+<script>
+const C=document.getElementById('c'),X=C.getContext('2d'),O=document.getElementById('o'),W=360,H=640,PY=560;
+const $=id=>document.getElementById(id),K={l:0,r:0};
+const WP=[{n:'권총',h:0,r:3,m:1,c:'#6fc8ff',l:14},{n:'소총',h:100,r:5,m:1.3,c:'#ffd36a',l:24},{n:'기관단총',h:250,r:9,m:1.2,c:'#ff9f5a',l:18},{n:'레이저건',h:500,r:8,m:2.2,c:'#5be3ff',l:26},{n:'플라즈마포',h:1000,r:7,m:4,c:'#d58bff',l:30}];
+let S,Q,inp='',mode='',best=0,playerName='',difficulty='normal',rankDifficulty='normal';const HM=[1,0.1,0.07,2.8,3.0],SPM=[1,1,2,3,3.2];const ER=()=>S.stage<4?1:.15+.85*Math.min(1,S.st/120);
+const diffLabel=d=>d==='challenge'?'도전':(d==='hard'?'하드':'노말');
+const PM=[1,1,2,8,15],TG=[1e4,2e4,1e5,1e6,Infinity],PV=[0,1e4,2e4,1e5,1e6];
+try{best=+localStorage.getItem('gdbs')||0}catch(e){}
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function init(){S={hp:100,atk:10,lvl:1,t:0,hits:0,wi:0,wh:0,qm:30,kills:0,bk:0,nb:0,bt:40,zs:[],gates:[],fx:[],bl:[],ft:[],score:0,stage:1,st:0,px:W/2,tx:W/2,sp:1,fire:0,gt:4,fl:0,dash:0,pop:null,ban:null,ang:-Math.PI/2,mf:0,qt:0,cv:0,fastBt:5,run:false}}
+function ov(h,live){O.innerHTML=h;O.hidden=false;O.className=live?'live':''}
+function menu(){mode='';ov(`<h1>도형 방어선</h1><p>이름이나 번호를 입력하고 시작하세요.</p><input id="name" maxlength=20 placeholder="예: 2-3 김민수" autocomplete="off" value="${playerName.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}"><div class="modebuttons"><button class="p" onclick="start('normal')">노말 모드 시작</button><button class="hard" onclick="start('hard')">하드 모드 시작</button><button class="challenge" onclick="start('challenge')">🔥 도전 모드 시작</button></div><button onclick="showRanking('normal')">🏆 랭킹 보기</button><p>노말 · 하드(적 강화) · 도전(5단계 시작+최종무기+1회 오답 즉시 실패)</p>`);setTimeout(()=>{const e=$('name');if(e){e.focus();e.select()}},0)}
+function start(selectedDifficulty){if(selectedDifficulty)difficulty=selectedDifficulty;const e=$('name');if(e&&e.value.trim())playerName=e.value.trim();if(!playerName){alert('이름 또는 번호를 입력하세요.');return}try{best=+(localStorage.getItem('gdbs_'+difficulty)||(difficulty==='normal'?localStorage.getItem('gdbs'):'0'))||0}catch(e){best=0}init();if(difficulty==='challenge'){S.stage=5;S.wi=4;S.wh=1000}O.hidden=true;mode='';S.run=true}
+function showRanking(which){rankDifficulty=['normal','hard','challenge'].includes(which)?which:difficulty;mode='rank';const requested=rankDifficulty;ov(`<h1>🏆 ${diffLabel(requested)} 랭킹</h1><div class="rank-tabs"><button class="${requested==='normal'?'p':''}" onclick="showRanking('normal')">노말</button><button class="${requested==='hard'?'p':''}" onclick="showRanking('hard')">하드</button><button class="${requested==='challenge'?'p':''}" onclick="showRanking('challenge')">도전</button></div><div id="rank"><div class="rankerr">불러오는 중...</div></div><button onclick="menu()">돌아가기</button>`);if(typeof google!='undefined'&&google.script&&google.script.run){google.script.run.withSuccessHandler(rows=>{if(mode==='rank'&&rankDifficulty===requested)renderRanking(rows,requested)}).withFailureHandler(()=>{if(mode!=='rank'||rankDifficulty!==requested)return;const e=$('rank');if(e)e.innerHTML='<div class="rankerr">랭킹을 불러오지 못했습니다.</div>'}).getRanking(requested)}else{renderRanking([],requested)}}
+function renderRanking(rows,which=difficulty){const e=$('rank');if(!e)return;if(!rows.length){e.innerHTML=`<div class="rankerr">${diffLabel(which)} 모드 기록이 아직 없습니다.</div>`;return}e.innerHTML=rows.map((r,i)=>`<div class="rh ${r.name===playerName?'me':''}"><span>${i<3?['🥇','🥈','🥉'][i]:i+1+'.'} ${esc(r.name)}</span><b>${Number(r.score).toLocaleString()}점</b></div>`).join('')}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function spawnZ(b){const d=df(),r=Math.random();let T;
+ if(b)T={hm:0,v:.55,r:34,d:40,c:'#d9694f'};
+ else if(r<.2&&d>.7)T={hm:.5,v:1.8,r:11,d:8,c:'#7fc4c9'};
+ else if(r>.85&&d>2)T={hm:2.5,v:.65,r:20,d:15,c:'#a493c2'};
+ else T={hm:1,v:1,r:15,d:10,c:'#8fa3b8'};
+ const hard=difficulty==='hard'||difficulty==='challenge';const challengeHp=difficulty==='challenge';const hp=b?Math.ceil(Math.min(S.stage<=3?250:Infinity,400+250*S.nb)*ER()*(challengeHp?0.8:(hard?1.35:1))):Math.ceil((12+8*d+3*d*d)*T.hm*HM[S.stage-1]*ER()*(challengeHp?0.7:(hard?1.5:1)));
+ const challengeSpeed=difficulty==='challenge'?(S.t<60?1:(S.t<120?1.05:1.10)):1;S.zs.push({x:R(40,320),y:-40,hp,mh:hp,v:Math.min(110,45+d*2)*T.v*challengeSpeed,d:T.d,r:T.r,c:T.c,b});
+ if(b){S.nb++;S.ban={s:'보스 로봇 접근!',t:2}}}
+function spawnFastZ(){const d=df(),hp=Math.ceil((12+8*d+3*d*d)*0.6*HM[S.stage-1]*ER()*0.7);S.zs.push({x:R(40,320),y:-40,hp,mh:hp,v:Math.min(110,45+d*2)*3,d:12,r:10,c:'#ff4d5a',b:false,fast:true});S.ban={s:'초고속 로봇 출현!',t:2}}
+function spawnG(){const gm=[10,10,12,15,20][S.stage-1];if(!S.ng){S.ng=1;S.gates.push({y:-40,v:[R(1,gm),R(1,gm)]});return}const n=Math.random()<.5?2:3,v=[];for(let i=0;i<n;i++){let x;do x=R(-gm,gm);while(!x);v.push(x)}
+ if(Math.random()<.2)v.forEach((x,i)=>v[i]=-Math.abs(x));else if(!v.some(x=>x>0))v[R(0,n-1)]=R(1,gm);S.gates.push({y:-40,v})}
+function pick(v){S.cv=v;S.qt=30;S.qm=30;newQ()}
+function shoot(){const w=WP[S.wi],n=[1,1,2,2,3][S.wi];S.mf=.07;
+ for(let i=0;i<n;i++)S.bl.push({x:S.px+(i-(n-1)/2)*16,y:PY-30,d:Math.ceil(S.atk*w.m*.5),c:w.c,r:3+S.wi*.8})}
+function hit(z,b){if(z.hp<=0)return;z.hp-=b.d;S.hits++;S.score++;
+ if(z.hp<=0){S.kills++;const pt=(z.b?1500:3*(10+Math.floor(z.mh/4)))*PM[S.stage-1];S.score+=pt;S.ft.push({x:z.x,y:z.y,s:'+'+pt.toLocaleString(),t:.7});if(z.b){S.bk++;S.ban={s:'보스 격파!',t:2}}}
+ if(S.stage>=3&&difficulty!=='challenge'){S.wh++;let n=0;WP.forEach((q,j)=>{if(S.wh>=q.h)n=j});if(n>S.wi){S.wi=n;S.ban={s:'새 무기 획득: '+WP[n].n,t:2.5}}}}
+function upd(dt){
+ S.t+=dt;S.st+=dt;S.tx=Math.max(24,Math.min(W-24,S.tx+(K.r-K.l)*230*dt));S.px+=(S.tx-S.px)*Math.min(1,dt*12);
+ S.dash=(S.dash+dt*40)%40;S.fl=Math.max(0,S.fl-dt);S.mf=Math.max(0,S.mf-dt);
+ if(S.pop&&(S.pop.t-=dt)<=0)S.pop=null;if(S.ban&&(S.ban.t-=dt)<=0)S.ban=null;
+ S.sp-=dt;if(S.sp<=0){let spawnScale=1;if(difficulty==='challenge'){spawnScale=S.t<60?1:(S.t<120?0.87:0.77)}S.sp=Math.max(.3,1-.07*df())*SPM[S.stage-1]*((difficulty==='hard'||difficulty==='challenge')?0.8:1)*spawnScale;spawnZ(0);if(df()>4&&Math.random()<.3)spawnZ(0)}
+ if(difficulty==='challenge'&&S.score>500000){S.fastBt-=dt;if(S.fastBt<=0){spawnFastZ();S.fastBt=5}}
+ S.bt-=dt;if(S.bt<=0){S.bt=50;spawnZ(1)}
+ S.gt-=dt;if(S.gt<=0&&!S.gates.length&&mode!='q'){spawnG();S.gt=99}
+ for(const g of S.gates){g.y+=80*dt;if(g.y>=PY-30){const n=g.v.length,i=Math.max(0,Math.min(n-1,Math.floor((S.px-16)/((W-32)/n))));const v=g.v[i];S.gates=[];S.gt=6;pick(v);break}}
+ for(const z of S.zs){z.y+=z.v*dt;if(z.y>=PY-10){S.hp-=z.d;z.hp=0;S.fl=.3}}
+ for(const b of S.bl){const o=b.y;b.y-=650*dt;let t=null;
+  for(const z of S.zs)if(z.hp>0&&Math.abs(b.x-z.x)<=z.r+8&&z.y+z.r>=b.y&&z.y-z.r<=o&&(!t||z.y>t.y))t=z;
+  if(t){hit(t,b);b.dead=1}else if(b.y<-40)b.dead=1}
+ S.bl=S.bl.filter(b=>!b.dead);S.ft=S.ft.filter(f=>(f.t-=dt)>0);
+ S.fire-=dt;if(S.fire<=0){S.fire=1/WP[S.wi].r;shoot()}
+ S.zs=S.zs.filter(z=>z.hp>0);S.fx=S.fx.filter(f=>(f.t-=dt)>0);
+ if(S.hp<=0)over();else if(S.stage<5&&S.score>=TG[S.stage-1])clear()}
+function df(){return[0,3,6,8,10][S.stage-1]+S.st/60}
+function go(){O.hidden=true;S.run=true}
+function clear(){S.run=false;mode='';K.l=K.r=0;S.stage++;S.st=0;S.atk=10;S.hp=100;S.zs=[];S.bl=[];S.gates=[];S.gt=4;S.bt=40;S.sp=1;if(S.stage==3){S.wh=0;S.wi=0}
+ const N={2:'2단계는 로봇이 더 빠르고 단단해져요.',3:'3단계부터 명중 횟수에 따라 새 무기를 얻어요! 목표는 100,000점이에요.',4:'4단계예요. 목표는 1,000,000점! 점수 배율이 크게 올라요.',5:'마지막 5단계예요. 죽을 때까지 계속돼요!'};
+ ov(`<h1>${S.stage-1}단계 클리어!</h1><p>${N[S.stage]}<br>체력은 100으로 회복되고, 공격력은 처음 값(10)으로 초기화돼요.</p><button class="p" onclick="go()">${S.stage}단계 시작</button>`)}
+function over(){S.run=false;S.hp=0;mode='';if(S.score>best){best=S.score;try{localStorage.setItem('gdbs_'+difficulty,best);if(difficulty==='normal')localStorage.setItem('gdbs',best)}catch(e){}}
+ const payload={name:playerName,difficulty:difficulty,score:S.score,stage:S.stage,kills:S.kills,boss:S.bk,hits:S.hits,survival:Math.floor(S.t)};
+ ov(`<h1>방어선 붕괴</h1><p>${diffLabel(difficulty)} 모드</p><div class="q">${S.score.toLocaleString()}점</div><p>${playerName} · ${S.stage}단계 도달<br>최고 점수 ${best.toLocaleString()}점<br>${Math.floor(S.t)}초 생존 · 로봇 ${S.kills}기 처치 · 보스 ${S.bk}기 격파 · 명중 ${S.hits}회</p><p id="saveStatus">점수 저장 중...</p><div id="rank"></div><button class="p" onclick="start()">같은 모드 다시 도전</button><button onclick="showRanking()">🏆 랭킹 보기</button>`);
+ if(typeof google!='undefined'&&google.script&&google.script.run){google.script.run.withSuccessHandler(rows=>{const st=$('saveStatus');if(st)st.textContent='점수가 저장되었습니다!';renderRanking(rows,difficulty)}).withFailureHandler(()=>{const st=$('saveStatus');if(st)st.textContent='점수 저장에 실패했습니다. (게임은 계속할 수 있어요)';}).saveScore(payload)}else{renderRanking([],difficulty)}}
+const ch=a=>a[R(0,a.length-1)],shuf=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+const f1=n=>n.toFixed(1),SV=s=>`<svg viewBox="0 0 220 112" class="fg">${s}</svg>`;
+const tx=(s,x,y,c)=>`<text x="${f1(x)}" y="${f1(y)}"${c?` class="${c}"`:''}>${s}</text>`;
+const pg=P=>`<polygon points="${P.map(p=>f1(p[0])+','+f1(p[1])).join(' ')}"/>`;
+const ln=(a,b,c)=>`<line x1="${f1(a[0])}" y1="${f1(a[1])}" x2="${f1(b[0])}" y2="${f1(b[1])}"${c?` class="${c}"`:''}/>`;
+const lb=(s,x,y)=>tx(s,x,y,/x/.test(s)?'x':'');
+function fit(P,x0,y0,w,h,fl){const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),a=Math.min(...xs),b=Math.max(...xs),c=Math.min(...ys),d=Math.max(...ys),s=Math.min(w/(b-a||1),h/(d-c||1));
+ return P.map(p=>[x0+(w-(b-a)*s)/2+(fl?b-p[0]:p[0]-a)*s,y0+(h-(d-c)*s)/2+(d-p[1])*s])}
+function tri(P,nm,sd,an){const c=[0,1].map(i=>(P[0][i]+P[1][i]+P[2][i])/3),o=(p,d)=>{const x=p[0]-c[0],y=p[1]-c[1],l=Math.hypot(x,y)||1;return[p[0]+x/l*d,p[1]+y/l*d]};let s=pg(P);
+ P.forEach((p,i)=>{const q=o(p,9);s+=tx(nm[i],q[0],q[1],'v')});
+ [[0,1],[1,2],[2,0]].forEach(([i,j],k)=>{if(sd&&sd[k]!==''&&sd[k]!=null){const q=o([(P[i][0]+P[j][0])/2,(P[i][1]+P[j][1])/2],10);s+=lb(''+sd[k],q[0],q[1])}});
+ P.forEach((p,i)=>{if(an&&an[i])s+=lb(an[i],p[0]+(c[0]-p[0])*.35,p[1]+(c[1]-p[1])*.35)});return s}
+const bySides=([a,b,c])=>{const x=(a*a+c*c-b*b)/(2*a);return[[0,0],[a,0],[x,Math.sqrt(Math.max(0,c*c-x*x))]]};
+const bySAS=(a,b,t)=>[[0,0],[a,0],[b*Math.cos(t*Math.PI/180),b*Math.sin(t*Math.PI/180)]];
+const byAng=(A,B)=>{const r=Math.PI/180,g=180-A-B,k=Math.sin(B*r)/Math.sin(g*r);return[[0,0],[1,0],[k*Math.cos(A*r),k*Math.sin(A*r)]]};
+const two=(p1,n1,s1,a1,p2,n2,s2,a2,fl)=>SV(tri(fit(p1,14,16,80,80,0),n1,s1,a1)+tri(fit(p2,124,16,80,80,fl),n2,s2,a2));
+const PT=[[3,4,5],[6,8,10],[5,12,13],[9,12,15],[8,15,17],[12,16,20],[7,24,25],[15,20,25],[10,24,26],[20,21,29]];
+const OXB=[['한 변의 길이가 다른 두 정삼각형은 항상 닮음이다.',1,'정삼각형은 모두 닮음이에요'],
+['두 직사각형은 항상 닮음이다.',0,'가로·세로의 비가 다를 수 있어요'],
+['두 정사각형은 항상 닮음이다.',1,'모양이 같고 크기만 달라요'],
+['두 마름모는 항상 닮음이다.',0,'각의 크기가 다를 수 있어요'],
+['두 이등변삼각형은 항상 닮음이다.',0,'꼭지각이 다를 수 있어요'],
+['두 직각이등변삼각형은 항상 닮음이다.',1,'세 각이 90°, 45°, 45°예요'],
+['두 직각삼각형은 항상 닮음이다.',0,'나머지 두 각이 다를 수 있어요'],
+['두 원기둥은 항상 닮음이다.',0,'높이와 반지름의 비가 달라요'],
+['닮은 두 도형은 항상 합동이다.',0,'크기가 다를 수 있어요'],
+['합동인 두 도형은 항상 닮음이다.',1,'닮음비가 1:1인 닮음이에요'],
+['닮은 두 도형에서 대응변의 길이의 비는 일정하다.',1,'그 비가 닮음비예요'],
+['닮은 두 도형에서 대응각의 크기는 각각 같다.',1,'닮음의 기본 성질이에요'],
+['두 삼각형에서 한 쌍의 대응각만 같으면 닮음이다.',0,'두 쌍의 대응각이 필요해요(AA)'],
+['두 쌍의 대응각이 각각 같은 두 삼각형은 닮음이다.',1,'AA 닮음이에요'],
+['두 쌍의 대응변의 비가 같으면 두 삼각형은 닮음이다.',0,'끼인각도 같아야 해요(SAS)'],
+['서로 다른 두 직선이 한 직선과 만날 때 동위각의 크기가 같으면 두 직선은 평행하다.',1,'평행 조건이에요'],
+['평행한 두 직선이 한 직선과 만날 때 엇각의 크기는 같다.',1,'평행선의 성질이에요'],
+['평행한 두 직선이 한 직선과 만날 때 동위각의 크기의 합은 180°이다.',0,'동위각은 크기가 같아요'],
+['△ABC에서 DE∥BC이면 AD : DB = AE : EC이다.',1,'평행선 사이 선분의 비'],
+['△ABC에서 DE∥BC이면 AD : DB = DE : BC이다.',0,'AD : AB = DE : BC가 맞아요'],
+['△ABC에서 DE∥BC이면 AD : AB = DE : BC이다.',1,'△ADE∽△ABC이기 때문이에요'],
+['직각삼각형에서 빗변의 길이의 제곱은 나머지 두 변의 길이의 제곱의 합과 같다.',1,'피타고라스 정리'],
+['직각삼각형에서 가장 짧은 변이 빗변이다.',0,'빗변이 가장 길어요'],
+['a²+b²=c²이면 길이가 a, b, c인 삼각형은 c가 빗변인 직각삼각형이다.',1,'피타고라스 정리의 역']];
+function gOX(){const[t,v,e]=ch(OXB);return{k:'ox',t,o:['O  맞다','X  아니다'],a:v?0:1,e}}
+function gCond(l){const k=ch(l<3?['sss','aa']:['sss','sas','aa','n1','n2']),m=ch([2,3]),fl=Math.random()<.5;let f,a,e;
+ if(k=='sss'||k=='n1'){const s=ch([[3,4,5],[4,5,6],[5,6,7],[6,7,8],[5,7,9],[4,6,7],[6,8,9]]),u=s.map(x=>x*m);if(k=='n1')u[2]++;
+  f=two(bySides(s),'ABC',s,0,bySides(u),'DEF',u,0,fl);a=k=='sss'?0:3;e=k=='sss'?'세 변의 비가 모두 1:'+m+'로 같아요':'세 변의 길이의 비가 달라요'}
+ else if(k=='sas'||k=='n2'){const x=ch([3,4,5,6]),y=ch([4,5,7,8]),t=ch([50,60,70,80,100,110]),y2=k=='sas'?y*m:y*m+ch([1,2]);
+  f=two(bySAS(x,y,t),'ABC',[x,'',y],[t+'°','',''],bySAS(x*m,y2,t),'DEF',[x*m,'',y2],[t+'°','',''],fl);a=k=='sas'?1:3;e=k=='sas'?'두 변의 비가 같고 끼인각도 같아요':'두 변의 길이의 비가 달라요'}
+ else{const al=ch([40,50,60,70,80]),be=ch([30,40,50,60,70,80].filter(z=>z!=al)),ga=180-al-be,ok=k=='aa';let y2=be;
+  if(!ok)do y2=be+ch([10,-10,20]);while(y2<=0||al+y2>=170||[al,be,ga].sort().join()==[al,y2,180-al-y2].sort().join());
+  f=two(byAng(al,be),'ABC',0,[al+'°',be+'°',''],byAng(al,y2),'DEF',0,ok?[al+'°','',ga+'°']:[al+'°',y2+'°','']);a=ok?2:3;e=ok?'두 쌍의 대응각이 같아요(나머지 '+ga+'°)':'대응각이 서로 달라요'}
+ return{k:'mc',t:'두 삼각형의 관계로 알맞은 것은?',fig:f,o:['SSS 닮음','SAS 닮음','AA 닮음','닮음이 아니다'],a,e}}
+const CT=[['세 쌍의 대응변의 길이의 비가 같다',0],['두 쌍의 대응변의 길이의 비가 같고, 그 끼인각의 크기가 같다',1],['두 쌍의 대응각의 크기가 각각 같다',2],['AB : DE = BC : EF = CA : FD',0],['AB : DE = BC : EF, ∠B = ∠E',1],['∠A = ∠D, ∠B = ∠E',2]];
+function gCT(){const[t,a]=ch(CT);return{k:'mc',t:'두 삼각형이 닮음이 되는 조건: “'+t+'”',o:['SSS 닮음','SAS 닮음','AA 닮음'],a,e:'SSS 세 변 / SAS 두 변+끼인각 / AA 두 각'}}
+function gCorr(){const L=ch(['PQR','XYZ','DEF']),p=shuf(L.split('')),i=R(0,2),j=(i+1)%3,ty=R(0,2),N='ABC';let t,o,a;
+ if(ty==0){t=`△ABC∽△${p.join('')}일 때, 꼭짓점 ${N[i]}에 대응하는 꼭짓점은?`;o=L.split('');a=L.indexOf(p[i])}
+ else if(ty==1){t=`△ABC∽△${p.join('')}일 때, ∠${N[i]}에 대응하는 각은?`;o=L.split('').map(x=>'∠'+x);a=L.indexOf(p[i])}
+ else{t=`△ABC∽△${p.join('')}일 때, 변 ${N[i]+N[j]}에 대응하는 변은?`;o=[[0,1],[0,2],[1,2]].map(q=>L[q[0]]+L[q[1]]);a=o.indexOf([p[i],p[j]].sort((x,y)=>L.indexOf(x)-L.indexOf(y)).join(''))}
+ return{k:'mc',t,o,a,e:'닮음 기호는 대응하는 순서대로 써요'}}
+function gFind(){const s=ch([[3,4,5],[4,5,6],[5,6,7],[4,6,8],[6,7,9]]),k=ch([2,3]),c=s.map(x=>x*k),w=shuf([s.map(x=>x+k),[c[0],c[1],c[2]+1],[c[0],c[1]+1,c[2]],[c[0]+1,c[1]+1,c[2]+1]]).slice(0,3),a=R(0,3);w.splice(a,0,c);
+ return{k:'mc',t:`세 변의 길이가 ${s.join(', ')}인 삼각형과 닮음인 삼각형의 세 변의 길이는?`,o:w.map(x=>x.join(', ')),a,e:'세 대응변의 비가 모두 같아야 해요(×'+k+')'}}
+function gRatio(){const[m,n]=ch([[2,3],[3,2],[1,2],[2,1],[3,4],[4,3],[2,5],[3,5]]),p=R(1,4),q=R(2,5),x1=Math.random()<.5,P=[[0,0],[10,0],[7,6]];
+ return{k:'num',t:'△ABC∽△DEF일 때, x의 값을 구하시오. (cm)',fig:two(P,'ABC',[n*p,x1?'x':n*q,''],0,P,'DEF',[m*p,x1?m*q:'x',''],0,0),a:x1?n*q:m*q,u:'cm',e:`닮음비 ${n}:${m} → AB:DE = BC:EF`}}
+function gTP(){const[m,n]=ch([[1,2],[2,1],[2,3],[3,2],[1,3],[3,1],[3,4]]),p=R(1,3),q=R(1,3),r=R(1,4),v=R(0,3),L={AD:m*p,DB:n*p,AE:m*q,EC:n*q,DE:m*r,BC:(m+n)*r};
+ const ask=['EC','DE','DB','AE'][v],show=[['AD','DB','AE'],['AD','DB','BC'],['AD','DE','BC'],['AD','DB','EC']][v];
+ const A=[110,16],B=[30,92],C=[196,92],t=m/(m+n),D=[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t],E=[A[0]+(C[0]-A[0])*t,A[1]+(C[1]-A[1])*t],
+ lab=k=>k==ask?'x':show.includes(k)?''+L[k]:'',md=(P,Q)=>[(P[0]+Q[0])/2,(P[1]+Q[1])/2],a=md(A,D),b=md(D,B),c=md(A,E),d=md(E,C),e=md(D,E),f=md(B,C);
+ const s=pg([A,B,C])+ln(D,E,'pr')+tx('A',A[0],A[1]-8,'v')+tx('B',B[0]-8,B[1]+4,'v')+tx('C',C[0]+8,C[1]+4,'v')+tx('D',D[0]-8,D[1],'v')+tx('E',E[0]+8,E[1],'v')
+ +lb(lab('AD'),a[0]-10,a[1])+lb(lab('DB'),b[0]-10,b[1])+lb(lab('AE'),c[0]+10,c[1])+lb(lab('EC'),d[0]+10,d[1])+lb(lab('DE'),e[0],e[1]+9)+lb(lab('BC'),f[0],f[1]+9);
+ return{k:'num',t:'△ABC에서 DE∥BC일 때, x의 값을 구하시오. (cm)',fig:SV(s),a:L[ask],u:'cm',e:'AD:DB = AE:EC, AD:AB = DE:BC'}}
+function gTh(){const[m,n]=ch([[1,2],[2,1],[2,3],[3,2],[1,3],[3,1]]),p=R(1,3),q=R(2,4),top=Math.random()<.5,Y=[14,14+76*m/(m+n),90],xl=y=>45+(y-14)*.3,xr=y=>150-(y-14)*.25,md=i=>(Y[i]+Y[i+1])/2;
+ let s='';Y.forEach((y,i)=>{s+=ln([12,y],[208,y])+tx('lmn'[i],215,y,'v')});s+=ln([xl(14),14],[xl(90),90],'pr')+ln([xr(14),14],[xr(90),90],'pr');
+ s+=lb(''+m*p,xl(md(0))-9,md(0))+lb(''+n*p,xl(md(1))-9,md(1))+lb(top?'x':''+m*q,xr(md(0))+9,md(0))+lb(top?''+n*q:'x',xr(md(1))+9,md(1));
+ return{k:'num',t:'l∥m∥n일 때, x의 값을 구하시오.',fig:SV(s),a:top?m*q:n*q,e:'평행선 사이의 선분의 길이의 비는 같아요'}}
+function gPy(l){const T=ch(PT.slice(0,l<3?4:10)),sw=Math.random()<.5,a=sw?T[1]:T[0],b=sw?T[0]:T[1],c=T[2],u=R(0,2),sd=[b,a,c];sd[[2,1,0][u]]='x';
+ const p=fit([[0,b],[0,0],[a,0]],50,10,110,90,0),B=p[1],ua=[p[0][0]-B[0],p[0][1]-B[1]],uc=[p[2][0]-B[0],p[2][1]-B[1]],na=Math.hypot(...ua),nc=Math.hypot(...uc),
+ q1=[B[0]+ua[0]/na*9,B[1]+ua[1]/na*9],q3=[B[0]+uc[0]/nc*9,B[1]+uc[1]/nc*9],q2=[q1[0]+q3[0]-B[0],q1[1]+q3[1]-B[1]];
+ return{k:'num',t:'∠B=90°인 직각삼각형 ABC에서 x의 값을 구하시오. (cm)',fig:SV(tri(p,'ABC',sd)+ln(q1,q2)+ln(q2,q3)),a:[c,a,b][u],u:'cm',e:`${a}² + ${b}² = ${c}²`}}
+function gPOX(){const s=Math.random()<.5?ch(PT.slice(0,8)):ch([[4,5,6],[5,6,7],[5,7,9],[6,8,11],[7,9,12],[8,10,13],[9,12,16],[4,6,8],[7,8,10],[6,9,11]]),[a,b,c]=s,L=a*a+b*b;
+ return{k:'ox',t:`세 변의 길이가 ${a}, ${b}, ${c}인 삼각형은 직각삼각형이다.`,o:['O  맞다','X  아니다'],a:L==c*c?0:1,e:`${a}²+${b}² = ${L}, ${c}² = ${c*c}`}}
+function gPA(){const[a,b,c]=ch(PT.slice(0,8)),ty=R(0,1);
+ if(ty==0){const p=fit([[0,0],[a,0],[a,b],[0,b]],40,12,130,80,0),m=(i,j)=>[(p[i][0]+p[j][0])/2,(p[i][1]+p[j][1])/2],d=m(0,2),u=m(0,1),r=m(1,2);
+  return{k:'num',t:`가로 ${a} cm, 세로 ${b} cm인 직사각형의 대각선의 길이 x는? (cm)`,fig:SV(pg(p)+ln(p[0],p[2],'pr')+lb(''+a,u[0],u[1]+9)+lb(''+b,r[0]+10,r[1])+lb('x',d[0]-9,d[1]-8)),a:c,u:'cm',e:`${a}² + ${b}² = ${c}²`}}
+ return{k:'num',t:`길이가 ${c} m인 사다리를 벽에 기대었더니 사다리 끝이 지면에서 ${b} m 높이에 닿았다. 사다리 아랫부분은 벽에서 몇 m 떨어져 있을까?`,a,u:'m',e:`x² = ${c}² − ${b}²`};}
+const GN=[[gOX,0,3],[gCond,0,3],[gCT,0,1],[gCorr,0,2],[gRatio,0,3],[gFind,2,2],[gTP,0,3],[gTh,2,3],[gPy,0,3],[gPOX,0,2],[gPA,2,3]];let lg=null;
+function prob(l){const p=GN.filter(g=>l>=g[1]&&g[0]!==lg),t=p.reduce((s,g)=>s+g[2],0);let r=Math.random()*t,g=p[0];for(const x of p){if((r-=x[2])<0){g=x;break}}lg=g[0];return g[0](l)}
+function newQ(){Q=prob(S.lvl);inp='';mode='q';const v=S.cv,nu=Q.k=='num',
+ ks=['1','2','3','4','5','⌫','6','7','8','9','0','확인'].map(k=>`<button${k=='확인'?' class="p"':''} onclick="k('${k}')">${k}</button>`).join(''),
+ body=nu?`<div id="ans"></div><div id="pad">${ks}</div>`:`<div class="opts${Q.k=='ox'?' ox':''}">${Q.o.map((o,i)=>`<button onclick="pk(${i})">${Q.k=='ox'?'':(i+1)+'. '}${o}</button>`).join('')}</div>`;
+ ov(`<div id="qp"><p>${v>0?`맞히면 공격력 +${v} · 틀리면 −${Math.ceil(v/2)}`:difficulty==='challenge'?`맞히면 공격력 −${-v} · 틀리면 즉시 실패`:`맞히면 피해 막기 · 틀리면 공격력 ${v}`} · 기회 1번 · <b id="tm">${Math.ceil(S.qt)}</b>초</p><div id="tb"><i id="ti" style="width:100%"></i></div>${Q.fig||''}<div class="qt">${Q.t}</div>${body}</div>`,1)}
+function k(c){if(mode!='q')return;if(c=='확인')return chk();if(c=='⌫')inp=inp.slice(0,-1);else if(inp.length<4)inp+=c;const e=$('ans');if(e)e.textContent=inp}
+function chk(){if(mode!='q'||inp==='')return;fin(+inp===Q.a)}
+function pk(i){if(mode=='q')fin(i===Q.a)}
+function fin(ok){
+ if(mode!='q')return;
+ if(!ok && difficulty==='challenge'){S.hp=0;over();return;}
+ mode='';O.hidden=true;S.gt=Math.max(S.gt,3);const v=S.cv,pm=PM[S.stage-1];
+ if(ok){S.lvl++;if(v>0){S.score+=300*pm;S.atk+=v;S.pop={s:'+'+v+' 공격력',g:1,t:1}}else if(difficulty==='challenge'){S.score+=100*pm;S.atk=Math.max(1,S.atk+v);S.pop={s:v+' 공격력',g:0,t:1}}else{S.score+=100*pm;S.pop={s:'피해 막기!',g:1,t:1}}}
+ else{const l=v>0?Math.ceil(v/2):-v;S.atk=Math.max(1,S.atk-l);S.pop={s:'-'+l+' 공격력',g:0,t:1};S.ban={s:'정답: '+(Q.k=='num'?Q.a+(Q.u||''):Q.o[Q.a]),u:Q.e,t:3.5}}}
+function mv(e){const r=C.getBoundingClientRect(),sc=pj(W/2,PY).s;S.tx=Math.max(24,Math.min(W-24,W/2+((e.clientX-r.left)/r.width*W-W/2)/sc))}
+C.addEventListener('pointerdown',mv);C.addEventListener('pointermove',mv);
+O.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('name'))start()});
+addEventListener('keydown',e=>{
+if(mode=='q'){if(Q.k=='num'){if(/^\d$/.test(e.key))k(e.key);else if(e.key=='Backspace')k('⌫');else if(e.key=='Enter')chk()}else{const i=/^\d$/.test(e.key)?+e.key-1:/^[oO]$/.test(e.key)?0:/^[xX]$/.test(e.key)&&Q.k=='ox'?1:-1;if(i>=0&&i<Q.o.length)pk(i)}if(!e.key.startsWith('Arrow'))return}
+ if(e.key=='ArrowLeft'||e.key=='a')K.l=1;if(e.key=='ArrowRight'||e.key=='d')K.r=1});
+addEventListener('keyup',e=>{if(e.key=='ArrowLeft'||e.key=='a')K.l=0;if(e.key=='ArrowRight'||e.key=='d')K.r=0});
+function txt(s,x,y,f,c,a){X.font=f;X.fillStyle=c;X.textAlign='center';X.textBaseline='middle';X.globalAlpha=a==null?1:a;X.fillText(s,x,y);X.globalAlpha=1}
+const HZ=110,D=PY+80;
+function pj(x,y){const v=Math.pow(Math.max(0,(y+40)/D),1.4),s=.22+.78*v;return{x:W/2+(x-W/2)*s,y:HZ+(H-HZ)*v,s}}
+function aim(){const p=pj(S.px,PY);return{x:p.x,y:p.y,k:p.s*1.1,a:-Math.PI/2}}
+function bot(z){const p=pj(z.x,z.y),s=p.s,r=z.r*s,x=p.x,y=p.y,by=z.b?y-r:y,wb=Math.sin(S.t*10+z.x)*r*.15;
+ X.fillStyle='rgba(0,0,0,.18)';X.beginPath();X.ellipse(x,y+r*(z.b?1.45:1.2),r*1.2,r*.35,0,0,7);X.fill();
+ if(z.b){for(let i=0;i<3;i++){X.fillStyle=i%2?'#3a4046':'#2b2f33';X.fillRect(x-r*1.15,y+r*(.1+i*.42),r*2.3,r*.4)}
+  txt(Math.ceil(z.hp),x,y+r*.8,`${Math.max(10,Math.round(24*s))}px 'Black Han Sans',sans-serif`,'#fff')}
+ X.fillStyle='#59666d';X.fillRect(x-r*.55,by+r*.7,r*.4,r*.55+wb);X.fillRect(x+r*.15,by+r*.7,r*.4,r*.55-wb);
+ X.fillRect(x-r*1.2,by-r*.3,r*.28,r*.9);X.fillRect(x+r*.92,by-r*.3,r*.28,r*.9);
+ X.fillStyle=z.c;X.fillRect(x-r*.9,by-r*.4,r*1.8,r*1.2);
+ X.fillStyle=z.b?'#ff6a3d':'#e0453d';X.beginPath();X.arc(x,by-r*.5,r*.75,Math.PI,0);X.fill();
+ X.fillStyle='#1c2730';X.fillRect(x-r*.6,by-r*.55,r*1.2,r*.3);
+ X.fillStyle='#ffe15a';X.fillRect(x-r*.4,by-r*.5,r*.25,r*.16);X.fillRect(x+r*.15,by-r*.5,r*.25,r*.16);
+ if(!z.b&&s>.45)txt(Math.ceil(z.hp),x,by+r*.25,`700 ${Math.round(11*s*z.r/15)}px 'Noto Sans KR',sans-serif`,'#0e1a1c');
+ if(z.b){const h=Math.max(3,6*s);X.fillStyle='#2a3a38';X.fillRect(x-r,by-r*1.55,2*r,h);X.fillStyle='#ff5a3c';X.fillRect(x-r,by-r*1.55,2*r*Math.max(0,z.hp)/z.mh,h)}}
+function gate(g){const n=g.v.length,lw=(W-32)/n,s=pj(W/2,g.y).s,hh=72*s;
+ g.v.forEach((v,i)=>{const a=pj(16+i*lw,g.y),b=pj(16+(i+1)*lw,g.y),pos=v>0,cx=(a.x+b.x)/2;
+  const gr=X.createLinearGradient(0,a.y-hh,0,a.y);gr.addColorStop(0,pos?'rgba(70,160,255,.35)':'rgba(255,80,80,.35)');gr.addColorStop(1,pos?'rgba(40,120,255,.85)':'rgba(230,50,60,.85)');
+  X.fillStyle=gr;X.fillRect(a.x,a.y-hh,b.x-a.x,hh);
+  txt(pos?'+'+v:''+v,cx,a.y-hh*.55,`${Math.max(14,Math.round(56*s))}px 'Black Han Sans',sans-serif`,'#fff');
+  txt(pos?'맞히면 얻음':'틀리면 잃음',cx,a.y-hh*.15,`700 ${Math.max(9,Math.round(13*s))}px 'Noto Sans KR',sans-serif`,'#ffffffdd')});
+ for(let i=0;i<=n;i++){const a=pj(16+i*lw,g.y);X.fillStyle=(i<n?g.v[i]:g.v[i-1])>0?'#2a54b8':'#c93b34';X.fillRect(a.x-5*s,a.y-hh-8*s,10*s,hh+8*s)}}
+function me(A){const w=WP[S.wi];X.save();X.translate(A.x,A.y+(S.mf>0?1.5:0));X.scale(A.k,A.k);
+ X.fillStyle='rgba(0,0,0,.2)';X.beginPath();X.ellipse(0,26,16,5,0,0,7);X.fill();
+ X.fillStyle='#3c4a64';X.fillRect(-8,6,6,18);X.fillRect(2,6,6,18);X.fillStyle='#232a38';X.fillRect(-9,22,8,4);X.fillRect(1,22,8,4);
+ X.fillStyle='#e9e1cf';X.fillRect(-11,-16,22,24);X.fillStyle='#7a8a5e';X.fillRect(-8,-14,16,16);
+ X.fillStyle='#2f6fd0';X.beginPath();X.arc(0,-26,10,0,7);X.fill();X.fillStyle='#6aa3f0';X.beginPath();X.arc(-3,-30,4,0,7);X.fill();
+ X.translate(0,-12);X.rotate(A.a);if(Math.cos(A.a)<0)X.scale(1,-1);
+ X.fillStyle='#e9e1cf';X.fillRect(0,-3,12,6);X.fillStyle='#222c2b';X.fillRect(8,-3.5,w.l,7);X.fillStyle=w.c;X.fillRect(8,-1,w.l,2);
+ if(S.mf>0){X.fillStyle='#fff3b0';X.beginPath();X.arc(12+w.l,0,8,0,7);X.fill()}
+ X.restore()}
+function draw(){
+ let g=X.createLinearGradient(0,0,0,HZ);const SC=[['#8ccaf2','#d6ecf8','#4a93c9'],['#f0875a','#ffd9a0','#b85f7a'],['#171b45','#5a4a8a','#1c2a58'],['#3a0d0d','#c8452f','#4a1a1a'],['#050308','#40205a','#120a1c']][S.stage-1];g.addColorStop(0,SC[0]);g.addColorStop(1,SC[1]);X.fillStyle=g;X.fillRect(0,0,W,HZ);
+ X.fillStyle=SC[2];X.fillRect(0,HZ,W,H-HZ);
+ X.fillStyle='#c93b34';X.fillRect(62,24,16,HZ-24);X.fillRect(282,24,16,HZ-24);X.fillRect(62,24,236,8);
+ const e0=pj(16,-40).x,e1=pj(344,-40).x,r0=pj(4,-40).x,r1=pj(356,-40).x;
+ X.fillStyle='#a3abb3';X.beginPath();X.moveTo(e0,HZ);X.lineTo(e1,HZ);X.lineTo(344,H);X.lineTo(16,H);X.fill();
+ X.fillStyle='#d6453d';X.beginPath();X.moveTo(r0,HZ);X.lineTo(e0,HZ);X.lineTo(16,H);X.lineTo(4,H);X.fill();
+ X.beginPath();X.moveTo(e1,HZ);X.lineTo(r1,HZ);X.lineTo(356,H);X.lineTo(344,H);X.fill();
+ X.strokeStyle='#fff';for(let y=-130+((S.t*90)%90);y<PY+60;y+=90){const a=pj(W/2,y),b=pj(W/2,y+40);X.lineWidth=5*a.s;X.beginPath();X.moveTo(a.x,a.y);X.lineTo(b.x,b.y);X.stroke()}
+ const A=aim();
+ const L=S.zs.slice();for(const q of S.gates)L.push(q);L.sort((a,b)=>a.y-b.y);for(const o of L)o.hp===undefined?gate(o):bot(o);
+ for(const b of S.bl){const q=pj(b.x,b.y),t=pj(b.x,b.y+50),x=q.x,y=q.y,ty=t.y,h=b.r*1.6*q.s;
+ const blade=(w,l,c,al)=>{const e=y+(ty-y)*l;X.globalAlpha=al;X.fillStyle=c;X.beginPath();X.moveTo(x,y);X.quadraticCurveTo(x+w,y+(e-y)*.35,x,e);X.quadraticCurveTo(x-w,y+(e-y)*.35,x,y);X.fill()};
+ blade(h*2.4,1,b.c,.3);blade(h,1,b.c,1);blade(h*.45,.8,'#fff',1);X.globalAlpha=1}
+for(const f of S.ft){const q=pj(f.x,f.y);X.font=`700 ${Math.max(12,Math.round(20*q.s))}px 'Noto Sans KR',sans-serif`;X.textAlign='center';X.textBaseline='middle';X.globalAlpha=Math.min(1,f.t*2);X.lineWidth=3;X.strokeStyle='#1b2a44';const fy=q.y-34*q.s-(.7-f.t)*30;X.strokeText(f.s,q.x,fy);X.fillStyle='#ffd23f';X.fillText(f.s,q.x,fy);X.globalAlpha=1}
+ me(A);
+ if(S.pop)txt(S.pop.s,A.x,A.y-70*A.k-(1-S.pop.t)*30,"26px 'Black Han Sans',sans-serif",S.pop.g?'#1f6fe0':'#e0303f',Math.min(1,S.pop.t*2));
+ if(S.fl>0){X.fillStyle='#d1495b';X.globalAlpha=S.fl;X.fillRect(0,0,W,H);X.globalAlpha=1}
+ X.fillStyle='rgba(0,0,0,.5)';X.fillRect(0,0,W,66);
+ X.fillStyle='#2a3a38';X.fillRect(12,10,120,12);X.fillStyle=S.hp>30?'#6fbf73':'#d1495b';X.fillRect(12,10,120*Math.max(0,S.hp)/100,12);
+ X.font="700 12px 'Noto Sans KR',sans-serif";X.fillStyle='#e8efe6';X.textBaseline='middle';
+X.textAlign='left';X.fillText('체력 '+Math.max(0,Math.ceil(S.hp)),138,16);X.fillText(WP[S.wi].n,12,38);
+ const nx=WP[S.wi+1];X.textAlign='center';X.fillStyle='#ffd23f';X.font="700 14px 'Noto Sans KR',sans-serif";X.fillText('점수 '+S.score.toLocaleString(),W/2+10,38);X.font="700 12px 'Noto Sans KR',sans-serif";X.fillStyle='#e8efe6';X.textAlign='right';X.fillText('공격력 '+S.atk+'  Lv '+S.lvl,W-12,16);X.fillText(S.stage<3?'무기 변경: 3단계부터':nx?`명중 ${S.wh} / ${nx.h}`:`명중 ${S.wh} (최종 무기)`,W-12,38);
+ {const T=TG[S.stage-1],f=T!==Infinity,p0=PV[S.stage-1],pr=f?Math.min(1,(S.score-p0)/(T-p0)):1;X.fillStyle='#2a3a38';X.fillRect(12,58,W-24,5);X.fillStyle=f?'#ffd23f':'#ff7ad9';X.fillRect(12,58,(W-24)*pr,5);
+ X.font="700 11px 'Noto Sans KR',sans-serif";X.fillStyle='#e8efe6';X.textAlign='left';X.textBaseline='middle';X.fillText(S.stage+'단계'+(f?'':' (최종)'),12,50);X.textAlign='right';X.fillText(f?`다음 단계까지 ${Math.max(0,T-S.score).toLocaleString()}점`:'점수 무제한 도전',W-12,50)}
+ if(S.ban){X.globalAlpha=Math.min(1,S.ban.t);X.lineWidth=5;X.strokeStyle='#1b2a44';X.textAlign='center';let fs=28;do{X.font=fs+"px 'Black Han Sans',sans-serif";fs-=2}while(X.measureText(S.ban.s).width>W-24&&fs>12);X.strokeText(S.ban.s,W/2,106);X.fillStyle='#fff';X.fillText(S.ban.s,W/2,106);
+  if(S.ban.u){X.font="700 14px 'Noto Sans KR',sans-serif";X.lineWidth=4;S.ban.u.split('|').forEach((s,i)=>{X.strokeText(s,W/2,132+i*18);X.fillStyle='#ffe9a8';X.fillText(s,W/2,132+i*18)})}X.globalAlpha=1}}
+
+let last=0;
+function loop(t){const dt=Math.min(.1,(t-last)/1000||0);last=t;
+ try{
+ if(S.run){let r=dt;while(r>0&&S.run){const s=Math.min(.034,r);upd(s);r-=s}}
+ if(mode=='q'){S.qt-=dt;const e=$('ti');if(e){e.style.width=Math.max(0,S.qt/S.qm*100)+'\%';e.style.background=S.qt<=5?'#d1495b':'';$('tm').textContent=Math.max(0,Math.ceil(S.qt))}if(S.qt<=0)fin(0)}
+ draw();
+ }catch(err){console.error(err)}
+ requestAnimationFrame(loop)}
+init();menu();requestAnimationFrame(loop);
+</script></body></html>
