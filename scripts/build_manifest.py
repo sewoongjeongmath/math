@@ -16,14 +16,17 @@ SKIP_TOP = {"scripts", "index.html", "site.json", "files.json", "README.md"}
 
 
 def git_times(root):
-    """경로 → 마지막으로 추가·수정된 시각(유닉스 초). 기록을 못 읽으면 빈 dict."""
+    """경로 → 처음 올라온(또는 내용이 바뀐) 시각(유닉스 초).
+    이름 바꾸기·옮기기처럼 내용이 그대로인 경우(R100)는 원래 시각을 이어받는다.
+    기록을 못 읽으면 빈 dict."""
     def git(*a):
         return subprocess.run(["git", "-c", "core.quotepath=off", *a], cwd=root,
                               capture_output=True, text=True, check=True).stdout
     try:
         if git("rev-parse", "--is-shallow-repository").strip() == "true":
             git("fetch", "--unshallow", "--quiet")
-        out = git("log", "--format=%x00%ct", "--name-only", "--no-renames", "--diff-filter=AM")
+        out = git("-c", "diff.renameLimit=10000", "log", "--reverse", "--format=%x00%ct",
+                  "--name-status", "-M")
     except (OSError, subprocess.CalledProcessError) as e:
         print("git 기록을 읽지 못함:", e, file=sys.stderr)
         return {}
@@ -31,8 +34,21 @@ def git_times(root):
     for line in out.splitlines():
         if line.startswith("\x00"):
             ts = int(line[1:])
-        elif line and ts is not None:
-            times.setdefault(nfc(line), ts)
+            continue
+        if not line or ts is None:
+            continue
+        parts = line.split("\t")
+        st = parts[0]
+        if st.startswith("R") and len(parts) == 3:
+            old, new = nfc(parts[1]), nfc(parts[2])
+            prev = times.pop(old, ts)
+            times[new] = prev if st == "R100" else ts   # 내용 그대로면 원래 날짜 유지
+        elif st.startswith("C") and len(parts) == 3:
+            times[nfc(parts[2])] = ts
+        elif st == "D" and len(parts) == 2:
+            times.pop(nfc(parts[1]), None)
+        elif len(parts) == 2:                            # A(새로 올림), M(내용 바뀜) 등
+            times[nfc(parts[1])] = ts
     return times
 
 
