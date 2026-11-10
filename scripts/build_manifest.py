@@ -98,7 +98,8 @@ order = cfg.get("order") or []
 rank = {n: i for i, n in enumerate(order)}
 tree["folders"].sort(key=lambda f: (rank.get(nfc(f["name"]), len(order)), natural_key(f["name"])))
 
-out = {"title": cfg.get("title", "정세웅의 수학세상"),
+out = {"commit": os.environ.get("GITHUB_SHA", ""),
+       "title": cfg.get("title", "정세웅의 수학세상"),
        "subtitle": cfg.get("subtitle", ""),
        "folders": tree["folders"]}
 with open(os.path.join(ROOT, "files.json"), "w", encoding="utf-8") as f:
