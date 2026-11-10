@@ -133,11 +133,11 @@
 
   // ---------- GitHub API ----------
   async function gh(path, opts={}){
-    const headers = { "Accept":"application/vnd.github+json", "Authorization":"Bearer "+cfg.token, "X-GitHub-Api-Version":"2022-11-28" };
+    const headers = { "Accept":"application/vnd.github+json", "Authorization":"Bearer "+cfg.token };
     if(opts.body) headers["Content-Type"]="application/json";
     let r;
     try{ r = await fetch(API+path, {...opts, headers, cache:"no-store"}); }
-    catch(e){ const er=new Error("인터넷 연결을 확인해 주세요."); er.status=0; throw er; }
+    catch(e){ const er=new Error("GitHub에 연결하지 못했어요. 인터넷 연결을 확인하거나, 학교망이라면 다른 네트워크(휴대폰 핫스팟 등)에서 시도해 보세요. ("+(e&&e.message||e)+")"); er.status=0; throw er; }
     if(!r.ok){
       let msg=""; try{ msg=(await r.json()).message||""; }catch(e){}
       const er=new Error(msg||("오류 "+r.status)); er.status=r.status; throw er;
@@ -190,29 +190,41 @@
   const b64file = f => new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(",")[1]||""); r.onerror=()=>rej(r.error); r.readAsDataURL(f); });
 
   // ---------- deploy status ----------
-  let watchTimer=null, watchUntil=0;
+  // 실제 사이트의 files.json에 이번 커밋 번호가 들어갔는지 직접 확인한 뒤에만 "반영됐어요"라고 알린다.
+  let watchTimer=null, watchUntil=0, watchSha="", actionsOk=true;
   function setStatus(kind, html){ const el=$("#status"); if(!el) return; if(!kind){ el.innerHTML=""; return; } el.innerHTML=`<div class="status ${kind}">${html}</div>`; }
   function watchDeploy(){
-    watchUntil = Date.now()+4*60*1000;
-    setStatus("info", `<span class="spin"></span>저장했어요. 보는 사람 페이지에는 1~2분 뒤에 반영돼요.`);
-    clearTimeout(watchTimer); watchTimer=setTimeout(pollDeploy, 8000);
+    watchSha = S.headSha; watchUntil = Date.now()+8*60*1000;
+    setStatus("info", `<span class="spin"></span>저장했어요. 사이트에 반영되는 중이에요… (보통 1~3분)`);
+    clearTimeout(watchTimer); watchTimer=setTimeout(pollDeploy, 15000);
+  }
+  async function siteCommit(){
+    try{
+      const r = await fetch(S.siteUrl + "files.json?t=" + Date.now(), {cache:"no-store"});
+      if(!r.ok) return "";
+      return (await r.json()).commit || "";
+    }catch(e){ return ""; }
   }
   async function pollDeploy(){
-    try{
-      const r = await gh(`${R()}/actions/runs?branch=${encodeURIComponent(S.branch)}&per_page=1`);
-      const run = r.workflow_runs && r.workflow_runs[0];
-      if(run && run.head_sha===S.headSha){
-        if(run.status==="completed"){
-          if(run.conclusion==="success") setStatus("ok", `✓ 사이트에 반영됐어요. <a href="${esc(S.siteUrl)}" target="_blank" rel="noopener">사이트 보기 ↗</a>`);
-          else if(run.conclusion!=="cancelled") setStatus("err", `사이트 반영에 실패했어요. <a href="${esc(run.html_url)}" target="_blank" rel="noopener">GitHub에서 원인 보기 ↗</a>`);
+    if(watchSha !== S.headSha) return;            // 그 사이 또 저장했으면 새 감시가 이어받음
+    const live = await siteCommit();
+    if(watchSha !== S.headSha) return;
+    if(live === watchSha){
+      setStatus("ok", `✓ 사이트에 반영됐어요. 이미 열어 둔 사람은 새로고침하면 보여요. <a href="${esc(S.siteUrl)}" target="_blank" rel="noopener">사이트 보기 ↗</a>`);
+      return;
+    }
+    if(actionsOk){
+      try{
+        const r = await gh(`${R()}/actions/runs?head_sha=${watchSha}&per_page=5`);
+        const run = (r.workflow_runs||[]).find(x=>x.head_sha===watchSha);
+        if(run && run.status==="completed" && run.conclusion && !["success","cancelled","skipped"].includes(run.conclusion)){
+          setStatus("err", `사이트 반영에 실패했어요. <a href="${esc(run.html_url)}" target="_blank" rel="noopener">GitHub에서 원인 보기 ↗</a> · 원인을 해결하거나, 아무 파일이나 다시 저장하면 다시 시도해요.`);
           return;
         }
-      }
-    }catch(e){
-      if(e.status===403 || e.status===404){ setTimeout(()=>setStatus("ok","✓ 저장했어요. 1~2분 뒤 사이트에 반영돼요."), 60000); return; }
+      }catch(e){ if(e.status===403 || e.status===404) actionsOk=false; }
     }
-    if(Date.now()<watchUntil) watchTimer=setTimeout(pollDeploy, 7000);
-    else setStatus("ok","✓ 저장했어요. 사이트에 반영이 늦어지면 잠시 후 새로고침해 보세요.");
+    if(Date.now()<watchUntil) watchTimer=setTimeout(pollDeploy, 8000);
+    else setStatus("err", `저장은 됐지만 8분이 지나도 사이트에 반영되지 않았어요. 저장소의 <a href="https://github.com/${esc(cfg.owner)}/${esc(cfg.repo)}/actions" target="_blank" rel="noopener">Actions</a>에서 빨간 ✕가 있는지 확인해 주세요.`);
   }
 
   // ---------- model helpers ----------
@@ -266,7 +278,8 @@
       </details>
     </div>`;
     const go = async () => {
-      cfg.owner=$("#owner").value.trim(); cfg.repo=$("#repo").value.trim(); cfg.token=$("#token").value.trim();
+      const clean=v=>v.trim().replace(/^https?:\/\/(www\.)?github\.com\//i,"").replace(/^@/,"").replace(/\/+$/,"");
+      cfg.owner=clean($("#owner").value).split("/")[0]; cfg.repo=clean($("#repo").value).split("/").pop(); cfg.token=$("#token").value.replace(/\s+/g,"");
       if(!cfg.owner||!cfg.repo||!cfg.token){ showLogin("세 칸을 모두 채워 주세요."); return; }
       await start(true);
     };
@@ -290,7 +303,8 @@
     }catch(e){
       const m = e.status===401 ? "토큰이 맞지 않거나 만료됐어요. 새로 만들어 넣어 주세요."
               : e.status===404 ? "저장소를 찾을 수 없어요. 아이디·저장소 이름과, 토큰에 이 저장소를 골랐는지 확인해 주세요."
-              : e.message;
+              : e.status===403 ? "권한이 부족해요. 토큰의 Repository access에서 이 저장소를 골랐는지, Contents가 ‘Read and write’인지 확인해 주세요. ("+e.message+")"
+              : e.message + (e.status?` (오류 ${e.status})`:"");
       if(!fromLogin){ cfg.token=""; }
       showLogin(m);
     }finally{ unbusy(); }

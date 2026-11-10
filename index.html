@@ -114,12 +114,12 @@
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const safeUrl = u => /^https?:\/\//i.test(u||"") ? u : "#";
-  const fileHref = p => p.split("/").map(encodeURIComponent).join("/");
+  const fileHref = (p, v) => p.split("/").map(encodeURIComponent).join("/") + (v ? "?v=" + v : "");
   const size = b => b==null ? "" : b<1024 ? b+" B" : b<1048576 ? Math.round(b/1024)+" KB" : (b/1048576).toFixed(1)+" MB";
 
   let SITE;
   try {
-    const r = await fetch("files.json", {cache:"no-store"});
+    const r = await fetch("files.json?t=" + Date.now(), {cache:"no-store"});
     if(!r.ok) throw new Error(r.status);
     SITE = await r.json();
   } catch(e) {
@@ -156,7 +156,7 @@
       <div class="meta">${s?`폴더 ${s} · `:""}자료 ${n}</div>${hasNew(f)?NEW:""}</a>`;
   }
   function itemRow(it, folderId, showPath){
-    const href = it.type === "link" ? safeUrl(it.url) : fileHref(it.path);
+    const href = it.type === "link" ? safeUrl(it.url) : fileHref(it.path, it.added);
     const tag = it.type === "html" ? ["html","HTML"] : it.type === "link" ? ["link","링크"] : ["file",(it.ext||"파일").toUpperCase().slice(0,4)];
     const p = showPath ? `<div class="p">${esc(pathOf(folderId).map(f=>f.name).join(" › "))}</div>` : "";
     const meta = [it.type === "file" ? size(it.size) : "", it.added ? fmtDate(it.added) : ""].filter(Boolean).join(" · ");
@@ -206,7 +206,7 @@
     const top = all.slice(0, 10), nToday = all.filter(([it]) => isNew(it)).length;
     $("#recent").innerHTML = `<h3>🕒 최근 올라온 자료${nToday?`<span class="cnt">오늘 ${nToday}개</span>`:""}</h3>` +
       (top.length ? top.map(([it,fid]) => {
-        const href = it.type === "link" ? safeUrl(it.url) : fileHref(it.path);
+        const href = it.type === "link" ? safeUrl(it.url) : fileHref(it.path, it.added);
         const tag = it.type === "html" ? ["html","HTML"] : it.type === "link" ? ["link","링크"] : ["file",(it.ext||"파일").toUpperCase().slice(0,4)];
         return `<a class="ri" href="${esc(href)}" target="_blank" rel="noopener"><span class="tag ${tag[0]}">${esc(tag[1])}</span>
           <div><div class="t">${esc(it.title)}${isNew(it)?NEW:""}</div><div class="d">${esc(pathOf(fid).map(x=>x.name).join(" › "))} · ${relDay(it.added)}</div></div></a>`;
